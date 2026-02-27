@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 9, 9, 11;
+  --background-end-rgb: 24, 24, 27;
+}
+
+@layer base {
+  body {
+    @apply bg-surface-950 text-white antialiased;
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--background-start-rgb)),
+      rgb(var(--background-end-rgb))
+    );
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  /* Slider track styling */
+  .slider-track {
+    @apply h-2 rounded-full bg-surface-700;
+  }
+
+  .slider-fill {
+    @apply h-2 rounded-full bg-gradient-to-r from-primary-600 to-primary-400;
+  }
+
+  .slider-thumb {
+    @apply w-4 h-4 rounded-full bg-white shadow-lg cursor-pointer;
+    @apply hover:scale-110 transition-transform;
+  }
+
+  /* Knob styling */
+  .knob {
+    @apply w-16 h-16 rounded-full bg-surface-700 border-2 border-surface-600;
+    @apply flex items-center justify-center cursor-pointer;
+    @apply hover:border-primary-500 transition-colors;
+  }
+
+  .knob-indicator {
+    @apply w-1 h-6 bg-primary-400 rounded-full;
+    transform-origin: bottom center;
+  }
+
+  /* Card styling */
+  .card {
+    @apply bg-surface-800/50 backdrop-blur-sm rounded-xl border border-surface-700;
+    @apply p-4 transition-all duration-200;
+    @apply hover:border-surface-600;
+  }
+
+  /* Section panel */
+  .section-panel {
+    @apply bg-surface-900/80 rounded-xl border border-surface-800 p-4;
+  }
+
+  /* Character counter */
+  .char-counter {
+    @apply font-mono text-sm;
+  }
+
+  .char-counter-safe {
+    @apply text-green-400;
+  }
+
+  .char-counter-warning {
+    @apply text-yellow-400;
+  }
+
+  .char-counter-danger {
+    @apply text-red-400;
+  }
+
+  /* Instrument card */
+  .instrument-card {
+    @apply bg-surface-800 rounded-lg p-3 border border-surface-700;
+    @apply transition-all duration-200 cursor-pointer;
+    @apply hover:border-primary-500/50 hover:bg-surface-700/50;
+  }
+
+  .instrument-card.active {
+    @apply border-primary-500 bg-primary-500/10;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-400 via-accent-400 to-primary-400 bg-clip-text text-transparent;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

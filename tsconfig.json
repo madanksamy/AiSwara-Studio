@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@aiswara/core": ["packages/core/src"],
+      "@aiswara/core/*": ["packages/core/src/*"],
+      "@aiswara/ui": ["packages/ui/src"],
+      "@aiswara/ui/*": ["packages/ui/src/*"],
+      "@aiswara/llm-clients": ["packages/llm-clients/src"],
+      "@aiswara/llm-clients/*": ["packages/llm-clients/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".next", "out"]
+}

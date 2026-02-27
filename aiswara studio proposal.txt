@@ -1,0 +1,3737 @@
+Here is a structured master prompt you can use to plan and spec your app. You can adapt wording, but keep the sections and constraints.
+
+***
+
+## 1. App goal and constraints
+
+Design an **AI music prompt composer** web app that lets users configure rich musical settings (50 instruments, 25 vocal character qualities, ornamentation, structure, and mix) and then outputs a compact, platform‑specific style prompt (max 600 characters including spaces) to paste into AI music generators such as Suno and HeartMuLa.[1][2][3][4]
+
+- Output: single text box (style / music description only, no lyrics), copy‑ready.
+- Length: hard limit 600 characters including spaces, leaving room for user’s own extra production notes later.
+- The app is developed locally first, then deployed to web.
+
+***
+
+## 2. Target AI platforms and prompt schema
+
+Define a core cross‑platform schema, then adapters per platform.
+
+### 2.1 Core schema (internal canonical representation)
+
+Represent every configuration as a structured object, internally something like:
+
+- Global:
+  - Target platform: Suno / HeartMuLa / Other.
+  - Genre and sub‑genre (multi‑select, including Western and Tamil/Indian genres).
+  - Tempo feel: slow / medium / fast plus optional BPM range.
+  - Overall mood axis: e.g. calm/energetic, dark/bright, intimate/epic.[2][1]
+  - Song role: full song / background score / intro theme / loop.
+
+- Instrumentation (up to 50 instruments):
+  - Category: melodic, harmonic, percussion, texture/ambience.
+  - Instrument name (e.g. veena, nadaswaram, mridangam, thavil, ghatam, kanjira, tavil, tabla, acoustic guitar, nylon guitar, electric lead, distorted rhythm, clean funk, bass guitar, synth bass, pads, strings, etc.).
+  - Presence/intensity slider (0–100).
+  - Playing style selector per instrument (examples):
+    - Melodic: legato, staccato, plucked, sustained, glides, bends.
+    - Guitar‑specific: palm‑muted, arpeggiated, power chords, fingerstyle, slide guitar, tremolo picking.
+    - Percussion: tight/dry, roomy, heavy hits, ghost notes, rolls, fills, swing/straight.
+  - Register / range (low/mid/high emphasis).
+  - Stereo / spatial hint (center, wide, panned left/right).
+
+- Percussion focus (expanded section):
+  - Kit type presets: “cinematic mridangam focus”, “folk parai ensemble”, “fusion kit (tabla + drum kit)”, “EDM kit layered with Indian percussion”.
+  - Groove feel: straight / swing / syncopated / complex tala.
+  - Tala / rhythmic cycle selector for Indian music (e.g. adi, rupaka, misra chapu, kanda chapu).
+  - Density sliders:
+    - Main groove density.
+    - Fills frequency.
+    - Percussion layering (single / moderate layers / dense percussion bed).
+
+- Guitar focus (expanded section):
+  - Subtypes: acoustic (steel, nylon), electric (clean, crunch, high‑gain), 12‑string, classical, slide.
+  - Role: rhythmic bed, arpeggio texture, lead melody, counter‑melody.
+  - Tone adjectives: warm, bright, dark, glassy, creamy, aggressive, lo‑fi, ambient.
+  - Effects toggles: delay, reverb, chorus, overdrive, distortion, tremolo, wah.
+  - Articulation sliders: strumming intensity, picking detail, sustain.
+
+- Vocals (25 vocal character qualities):
+  - Language mix: Tamil primary, Tamil + English, multilingual options.
+  - Vocal role: lead only / lead + harmonies / choir pads / chants / humming only.
+  - Gender / timbre: male / female / mixed / childlike / androgynous; tone: airy, nasal, chesty, breathy, raspy, bright, dark.
+  - Delivery style: classical Carnatic, light classical, folk, film‑style playback, pop, rock, devotional, spoken word.
+  - Emotion sliders: calm–intense, happy–melancholic, devotional–romantic, earthy–refined.
+  - Performance details:
+    - Vibrato depth.
+    - Ornamentation intensity (use with Carnatic section below).
+    - Dry vs reverby.
+
+***
+
+## 3. Ornamentation and Indian/Tamil features
+
+Create a dedicated “Ornamentation & Carnatic/Folk Embellishment” module feeding into the core schema.
+
+- General ornamentation:
+  - Hums: intro humming, background humming beds, wordless vocalise (“aa / oo”).
+  - Non‑lyrical textures: oohs, aahs, choir pads, crowd chants.
+  - Fills: short vocal riffs between phrases, call‑and‑response with instruments.
+
+- Carnatic elements:
+  - Alapana presence: none / subtle intro / extended intro, slider for complexity.
+  - Gamakam intensity slider for melody instruments and voice.
+  - Raga flavor presets (descriptive only, not exact theory enforcement): “Kalyani‑like bright major”, “Bhairavi‑like serious”, “Karnatak Kapi‑like soulful”, “Hindolam‑like meditative”, etc.
+  - Manodharma feel: improvisatory runs before or between sections.
+  - Tan / briga density: low/medium/high, especially for climactic phrases.
+
+- Folk elements:
+  - Rural Tamil folk feel, Gaana style, Parai drumming focus, Nadaswaram + Thavil festival energy.
+  - Call‑and‑response textures, group chants, claps, audience shouts (low intensity, cinematic).
+
+- Ornament routing:
+  - Controls whether ornamentation is attached to:
+    - Lead vocal.
+    - Solo instrument (e.g. violin, flute, nadaswaram, guitar lead).
+    - Background textures only.
+
+***
+
+## 4. Song structure and mix intent
+
+Expose high‑level song structure preferences, mapped to tags / descriptions compatible with platforms.[4][5][6]
+
+- Structure (abstract, not lyrics):
+  - Form presets: intro – verse – chorus – bridge – outro; AB; AABA; loop‑based; build‑and‑drop.
+  - Energy curve sliders:
+    - Start energy.
+    - Peak energy.
+    - End energy (fade, hold, drop).
+    - Build rate.
+
+- Section‑specific hints (even if not all platforms support tags, keep for internal structure):
+  - Intro: sparse, ambient pad + soft mridangam, or direct high‑energy opening.
+  - Verses: more open, vocal‑led, lighter percussion.
+  - Choruses: “explosive, guitar‑driven chorus”, “big Tamil film‑style hook with layered harmonies”.[5]
+  - Bridge: contrast section, harmonic or rhythmic twist.
+  - Outro: fade‑out, sudden stop, ambient tail.
+
+- Mix and production intent:
+  - Overall mix adjectives: clean, lush, cinematic, raw, lo‑fi, vintage, modern pop, club‑ready.
+  - Space: dry/close vs wide/ambient, room vs hall vs plate.
+  - Front‑back depth: vocal‑forward vs band‑forward vs balanced.
+  - Intended use: film score, background bed, dance track, devotional piece, ad jingle, podcast intro.
+
+***
+
+## 5. UI design: controls and grouping
+
+Specify UI sections and which use sliders vs checkboxes vs dropdowns.
+
+- Top‑level layout:
+  - Left: Genre, mood, tempo, structure.
+  - Middle: Instruments and percussion/guitar expansions.
+  - Right: Vocals, ornamentation, mix intent, platform selector.
+  - Bottom: Generated prompt + character counter.
+
+- Control mapping:
+  - Checkboxes:
+    - Instrument inclusion, ornamentation toggles (enable/disable hums, alapana, folk elements, specific effects).
+    - Platform‑specific options (e.g. “allow section tags” when platform supports).
+  - Sliders:
+    - Intensities (instrument presence, gamakam, percussion density, emotion axes, energy curve).
+    - Tempo feel (mapped to ranges).
+  - Dropdowns / multi‑select:
+    - Genre, sub‑genre, tala, raga flavor labels, vocal type, guitar/pad types.
+  - Character counter:
+    - Always visible.
+    - Hard stop (do not generate text exceeding 600 characters).
+    - Live preview of length while composing prompt.
+
+***
+
+## 6. Prompt generation logic
+
+Describe deterministic, layered generation from internal schema to platform‑specific text.
+
+### 6.1 Layers of description
+
+1. High‑level scaffold:
+   - “<genre> track, <tempo> feel, <mood> tone, for <use‑case>.”
+2. Instrumentation sentence:
+   - “Featuring <primary Indian instruments> with <percussion description> and <guitar description>.”
+3. Vocal and ornamentation:
+   - “Tamil lead vocals in <style>, with <ornamentation> and <emotion> delivery.”
+4. Structure and dynamics:
+   - “Starts <X>, builds to <Y>, ends with <Z>, with <structural nuance>.”
+5. Mix and production:
+   - “Mixed in a <mix adjectives> style.”
+
+The generator must:
+
+- Only mention instruments and qualities that are active (checked or non‑zero).
+- Prioritize Indian/Tamil instruments and Carnatic/folk descriptors when selected.
+- Use concise but vivid adjectives; avoid redundancy to stay within 600 characters.[1][2]
+- Collapse similar settings (e.g. multiple percussion sliders) into one phrase.
+
+### 6.2 Platform adapters
+
+Define adapter modules that take the canonical schema and render for each platform:
+
+- Suno adapter:
+  - Align with common Suno style prompt structure: “genre + tempo‑feel + instrumentation + vocal intent + mix intent + mood axis”.[2][1]
+  - Avoid section labels, [Verse], [Chorus], etc. in this output; those belong to lyrics field, which your app is not generating.[5][1]
+  - Option to inject Suno‑specific meta tags only if user opts in and they fit within character budget.[6]
+
+- HeartMuLa adapter:
+  - Emphasize “music type” and emotional progression across the piece, since HeartMuLa supports long‑form and fine‑grained style for different song parts.[7][8][4]
+  - Include hints for structure progression (intro feel, mid‑section climax, outro vibe) in natural language.
+
+- Generic adapter:
+  - Simplified version without platform‑specific tags, focusing on universal descriptors: genre, instruments, vocals, mood, mix.
+
+***
+
+## 7. Multi‑agent architecture
+
+Specify how multiple agents collaborate to build and validate the prompt.
+
+- Agents:
+  - Schema Agent:
+    - Owns the canonical internal representation (genres, instruments, sliders).
+    - Validates and normalizes user selections (e.g. conflicting options, impossible ranges).
+  - Style Composer Agent:
+    - Converts normalized schema into abstract description layers (instrument, vocal, structure, mix sentences).
+    - Responsible for brevity and clarity.
+  - Platform Adapter Agent:
+    - Takes abstract description and converts it into Suno / HeartMuLa / Generic strings according to each platform’s conventions and limits.
+  - Quality & Constraints Agent:
+    - Enforces:
+      - Max 600 characters including spaces.
+      - No platform‑forbidden tokens.
+      - No conflicting adjectives (e.g. “totally dry and extremely reverby”).
+    - Optionally runs multiple rewrites and chooses best‑scoring one under constraints.
+  - Testing/Diagnostics Agent:
+    - Generates diagnostic logs and structured reports for QA (not visible in final UI).
+    - Creates synthetic test inputs to explore edge cases.
+
+- Coordination:
+  - Use a shared state object that all agents read/write.
+  - Enforce clear contracts: input/output schema for each agent.
+  - Ensure idempotence where possible (same inputs → predictable outputs) to ease testing.[9]
+
+***
+
+## 8. Testing strategy
+
+Define testing for both logic and multi‑agent coordination.[10][11][9]
+
+- Unit tests:
+  - Schema Agent: validation logic, default fallbacks, conflict resolution.
+  - Style Composer Agent: given a fixed schema, output must:
+    - Stay under a given soft character budget.
+    - Contain required fields (genre, at least one instrument, mood).
+  - Platform Adapter Agent: mapping rules for Suno vs HeartMuLa (keywords present/absent as expected).
+  - Quality Agent: truncation behavior, duplicate adjective removal, safety checks.
+
+- Integration tests (multi‑agent flows):
+  - Full pipeline tests:
+    - Simple Western pop scenario.
+    - Tamil film song with heavy mridangam and alapana.
+    - Folk parai‑driven dance track.
+    - Guitar‑centric rock fusion piece.
+  - Vary slider extremes and ensure:
+    - Output remains coherent.
+    - Platform‑specific style is respected.
+  - Regression tests for character limit:
+    - Automatically generate many random configurations.
+    - Verify every final prompt ≤ 600 characters.
+
+- Scenario and user‑journey tests:
+  - Predefined “recipes” (presets) whose target output is reviewed by you musically.
+  - Check consistency: similar inputs should yield similar prompt patterns over time.
+
+- Manual creator review:
+  - You (and possibly other musicians) listen to results from Suno/HeartMuLa using the prompts.
+  - Adjust mappings, adjectives, and slider curves iteratively.
+
+***
+
+## 9. Presets and extensibility
+
+Plan for growth and reuse.
+
+- Preset library:
+  - Curated templates for:
+    - “Classic Ilaiyaraaja‑inspired Tamil film ballad”.
+    - “High‑energy Gaana street track”.
+    - “Carnatic kriti with modern ambient pads”.
+    - “Indian fusion rock with veena and electric guitars”.
+  - Presets simply pre‑fill slider/checkbox states and can be edited.
+
+- Extensibility:
+  - Ability to add new instruments without redesigning UI (e.g. via config file).
+  - Ability to add new platforms by writing new adapter modules without changing core schema.
+
+***
+
+If you’d like, I can now turn this into a very explicit JSON schema (fields, ranges, and example values) that your local app or agents can implement directly.
+
+Sources
+[1] How to structure prompts for Suno AI https://howtopromptsuno.com/making-music
+[2] How to Write Effective Prompts for Suno AI Music Generation https://www.soundverse.ai/blog/article/how-to-write-effective-prompts-for-suno-ai-music-generation-0957
+[3] The Best Ways To Create Music With AI Using Suno [2026] https://suno.com/hub/create-music-with-ai
+[4] HeartMuLa: A Family of Open Sourced Music Foundation Models https://arxiv.org/html/2601.10547v1
+[5] How to Guide Suno Into Creating Properly Structured Songs (Verse ... https://www.reddit.com/r/SunoAI/comments/1ovgha5/advanced_technique_structure_prompting_how_to/
+[6] Suno AI Meta Tags & Song Structure Command Guide https://jackrighteous.com/en-us/pages/suno-ai-meta-tags-guide
+[7] HeartMula Music AI Model In ComfyUI - The Next Level ... - YouTube https://www.youtube.com/watch?v=F9LFAeUbBIs
+[8] Heart Mula Full Tutorial | This FREE Open-Source AI ... - YouTube https://www.youtube.com/watch?v=vadPAai1obc
+[9] ​Testing Multi-Agent Systems in the LLM Age: A Practical Guide for ... https://realworlddatascience.net/applied-insights/tutorials/posts/2025/12/12/MAS-guide.html
+[10] Designing Robust MCP Tests for Multi-Agent AI Systems - Mabl https://www.mabl.com/blog/mcp-testing-multi-agent-ai
+[11] An Approach to Model Based Testing of Multiagent Systems - PMC https://pmc.ncbi.nlm.nih.gov/articles/PMC4385681/
+[12] SUNO AI Prompts: Guide to Creating Memorable Songs V3.5 https://www.youtube.com/watch?v=sQpvutPnUDc
+[13] Comprehensive list of music prompts and song structure? - Facebook https://www.facebook.com/groups/1673444546790462/posts/1928915691243345/
+[14] SUNO Tutorial? - Just Plain Folks https://www.jpfolks.com/forum/ubbthreads.php/topics/1201598/suno-tutorial.html
+[15] FL HeartMuLa - Multilingual AI music generation nodes for ComfyUI ... https://github.com/filliptm/ComfyUI_FL-HeartMuLa
+
+
+
+Below is a concrete JSON schema you can start from, extended with:
+
+- Input: lyrics text or external link (YouTube/Spotify/etc.).
+- Multi‑LLM analyzer layer (GPT, Opus, Gemini, Mistral, Ollama…).
+- Slider to compress/expand final prompt length (while hard‑capping at 600 chars, including spaces).
+- Selection of which model’s interpretation feeds the final music‑maker prompt.[1][2][3][4][5][6]
+
+You can treat this as a high‑level spec rather than strict JSON Schema syntax.
+
+***
+
+## App configuration JSON (high‑level)
+
+```json
+{
+  "appMeta": {
+    "name": "MultiAgent Music Prompt Builder",
+    "version": "0.1.0",
+    "description": "Visual composer for AI music prompts with Indian/Tamil focus, multi-LLM analysis, and platform-specific adapters.",
+    "globalConstraints": {
+      "finalPromptMaxChars": 600,
+      "defaultPromptCharsTarget": 300,
+      "minPromptCharsTarget": 120,
+      "maxPromptCharsTarget": 580
+    }
+  },
+
+  "inputs": {
+    "sourceType": "enum: [direct_config, lyrics_text, external_link]",
+    "lyricsText": {
+      "type": "string",
+      "maxLength": 5000
+    },
+    "externalLink": {
+      "type": "string",
+      "format": "uri",
+      "allowedDomains": [
+        "youtube.com",
+        "youtu.be",
+        "spotify.com",
+        "music.apple.com",
+        "soundcloud.com",
+        "bandcamp.com"
+      ]
+    },
+    "analysisLLMs": {
+      "availableModels": [
+        "gpt",
+        "opus",
+        "gemini",
+        "mistral",
+        "ollama_local",
+        "other_custom"
+      ],
+      "defaultModels": ["gpt", "gemini"],
+      "selectionMode": "multi_select",
+      "apiConfigRef": "external_llm_connectors"
+    }
+  },
+
+  "analysisLayer": {
+    "tasks": [
+      "style_extraction",
+      "instrumentation_detection",
+      "vocal_character_detection",
+      "rhythmic_groove_detection",
+      "ornamentation_detection",
+      "mood_arc_detection",
+      "mix_and_space_inference"
+    ],
+    "modelRoles": {
+      "gpt": ["style_extraction", "instrumentation_detection", "mood_arc_detection"],
+      "opus": ["ornamentation_detection", "vocal_character_detection"],
+      "gemini": ["rhythmic_groove_detection", "mix_and_space_inference"],
+      "mistral": ["folk_and_regional_cues"],
+      "ollama_local": ["lightweight_quick_pass", "privacy_sensitive_analysis"]
+    },
+    "conflictResolution": {
+      "strategy": "consensus_weighted",
+      "tieBreaker": "user_preferred_model",
+      "userPreferredModel": "gpt"
+    }
+  },
+
+  "ui": {
+    "sections": [
+      "global",
+      "instruments",
+      "percussion",
+      "guitars",
+      "vocals",
+      "ornamentation",
+      "structure",
+      "mix",
+      "platform",
+      "prompt_output"
+    ],
+    "promptLengthControl": {
+      "type": "slider",
+      "label": "Prompt detail level",
+      "min": 0,
+      "max": 100,
+      "default": 50,
+      "mapping": {
+        "0": 120,
+        "25": 200,
+        "50": 300,
+        "75": 450,
+        "100": 580
+      }
+    }
+  },
+
+  "globalConfig": {
+    "targetPlatform": {
+      "type": "enum",
+      "values": ["suno", "heartmula", "generic"],
+      "default": "suno"
+    },
+    "genre": {
+      "type": "multi_select",
+      "values": [
+        "tamil_film",
+        "carnatic_classical",
+        "tamil_folk",
+        "gaana",
+        "indian_fusion",
+        "bollywood_style",
+        "western_pop",
+        "rock",
+        "edm",
+        "ambient",
+        "cinematic_score",
+        "lofi"
+      ]
+    },
+    "tempo": {
+      "feel": "enum: [slow, medium, fast, variable]",
+      "bpmRange": { "min": 40, "max": 200 }
+    },
+    "moodAxes": {
+      "calm_to_energetic": { "type": "slider", "min": 0, "max": 100 },
+      "dark_to_bright": { "type": "slider", "min": 0, "max": 100 },
+      "intimate_to_epic": { "type": "slider", "min": 0, "max": 100 },
+      "devotional_to_romantic": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "useCase": {
+      "type": "enum",
+      "values": [
+        "full_song",
+        "background_score",
+        "intro_theme",
+        "short_form_video_bgm",
+        "ad_jingle",
+        "podcast_intro"
+      ]
+    }
+  },
+
+  "instrumentation": {
+    "instruments": [
+      {
+        "id": "veena",
+        "category": "melodic",
+        "enabled": false,
+        "intensity": 0,
+        "style": "enum: [legato, plucked, glides, classical_carnatic]",
+        "register": "enum: [low, mid, high]",
+        "stereo": "enum: [center, wide, left, right]"
+      },
+      {
+        "id": "nadaswaram",
+        "category": "melodic",
+        "enabled": false,
+        "intensity": 0,
+        "style": "enum: [festive_bright, sustained, piercing_lead]",
+        "register": "mid",
+        "stereo": "center"
+      },
+      {
+        "id": "mridangam",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": 0,
+        "style": "enum: [tight_classical, cinematic_deep, folk_flavored]",
+        "tala": "enum: [adi, rupaka, misra_chapu, kanda_chapu, other]"
+      },
+      {
+        "id": "tabla",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": 0,
+        "style": "enum: [light_groove, dense_fills, fusion]",
+        "tala": "string"
+      },
+      {
+        "id": "parai",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": 0,
+        "style": "enum: [street_folk, festival_energy]"
+      },
+      {
+        "id": "acoustic_guitar_steel",
+        "category": "guitar",
+        "enabled": false,
+        "intensity": 0,
+        "role": "enum: [rhythm_bed, arpeggios, counter_melody]",
+        "tone": "enum: [bright, warm, percussive]",
+        "effects": {
+          "reverb": false,
+          "delay": false,
+          "chorus": false
+        }
+      },
+      {
+        "id": "electric_guitar_lead",
+        "category": "guitar",
+        "enabled": false,
+        "intensity": 0,
+        "role": "enum: [melodic_lead, riffs, ambient_textures]",
+        "tone": "enum: [clean_glassy, crunchy, high_gain, ambient]",
+        "articulation": "enum: [bends, slides, legato_runs, tremolo_picking]"
+      }
+      /* plus ~40 more instruments defined similarly */
+    ],
+    "percussionGlobal": {
+      "kitPreset": "enum: [mridangam_focus, parai_ensemble, tabla_drumkit_fusion, edm_plus_indian]",
+      "grooveFeel": "enum: [straight, swing, syncopated, complex_tala]",
+      "densityMain": { "type": "slider", "min": 0, "max": 100 },
+      "fillsFrequency": { "type": "slider", "min": 0, "max": 100 },
+      "layering": "enum: [minimal, moderate, dense]"
+    },
+    "guitarsGlobal": {
+      "dominantRole": "enum: [rhythmic, lead, texture, balanced]",
+      "toneAdjectives": [
+        "warm",
+        "bright",
+        "dark",
+        "glassy",
+        "creamy",
+        "aggressive",
+        "lofi",
+        "ambient"
+      ],
+      "effectToggles": {
+        "delay": false,
+        "reverb": true,
+        "chorus": false,
+        "overdrive": false,
+        "distortion": false,
+        "tremolo": false,
+        "wah": false
+      }
+    }
+  },
+
+  "vocals": {
+    "language": {
+      "primary": "enum: [tamil, english, hindi, instrumental_only]",
+      "mix": "enum: [tamil_only, tamil_plus_english, multilingual]"
+    },
+    "role": "enum: [lead_only, lead_plus_harmonies, choir_pads, humming_only]",
+    "genderTimbre": {
+      "gender": "enum: [male, female, mixed, androgynous, childlike]",
+      "tone": ["airy", "nasal", "chesty", "breathy", "raspy", "bright", "dark"]
+    },
+    "style": "enum: [carnatic_classical, light_classical, tamil_folk, tamil_film, pop, rock, devotional]",
+    "emotion": {
+      "calm_to_intense": { "type": "slider", "min": 0, "max": 100 },
+      "happy_to_melancholic": { "type": "slider", "min": 0, "max": 100 },
+      "earthy_to_refined": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "performance": {
+      "vibratoDepth": { "type": "slider", "min": 0, "max": 100 },
+      "ornamentationLevel": { "type": "slider", "min": 0, "max": 100 },
+      "reverbAmount": { "type": "slider", "min": 0, "max": 100 }
+    }
+  },
+
+  "ornamentation": {
+    "hums": {
+      "enabled": false,
+      "position": "enum: [intro, background, throughout]"
+    },
+    "nonLyricalTextures": {
+      "ooh_aah_pads": false,
+      "crowd_chants": false,
+      "claps": false
+    },
+    "carnatic": {
+      "alapana": {
+        "enabled": false,
+        "placement": "enum: [intro, interlude, outro]",
+        "complexity": { "type": "slider", "min": 0, "max": 100 }
+      },
+      "gamakamIntensity": { "type": "slider", "min": 0, "max": 100 },
+      "ragaFlavor": "enum: [kalyani_like, bhairavi_like, kapi_like, hindolam_like, other]",
+      "tanBrigaDensity": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "folk": {
+      "tamilFolkFeel": { "type": "slider", "min": 0, "max": 100 },
+      "gaanaStyle": { "type": "slider", "min": 0, "max": 100 },
+      "festivalEnergy": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "routing": {
+      "appliesToLeadVocal": true,
+      "appliesToSoloInstrument": false,
+      "appliesToBackgroundOnly": false
+    }
+  },
+
+  "structure": {
+    "form": "enum: [intro_verse_chorus_bridge_outro, ab, aaba, loop_based, build_and_drop]",
+    "energyCurve": {
+      "start": { "type": "slider", "min": 0, "max": 100 },
+      "peak": { "type": "slider", "min": 0, "max": 100 },
+      "end": { "type": "slider", "min": 0, "max": 100 },
+      "buildRate": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "sectionHints": {
+      "intro": "string",
+      "verses": "string",
+      "chorus": "string",
+      "bridge": "string",
+      "outro": "string"
+    }
+  },
+
+  "mix": {
+    "mixAdjectives": [
+      "clean",
+      "lush",
+      "cinematic",
+      "raw",
+      "lofi",
+      "vintage",
+      "modern_pop",
+      "club_ready"
+    ],
+    "space": "enum: [dry, room, hall, plate, wide_ambient]",
+    "focus": "enum: [vocal_forward, band_forward, balanced]"
+  },
+
+  "platformAdapters": {
+    "suno": {
+      "stylePromptLimitHint": 200,
+      "useMetaTags": true,
+      "pattern": "genre + tempo + mood + instrumentation + vocal + mix",
+      "forbidSectionTags": true
+    },
+    "heartmula": {
+      "stylePromptFormat": "short_text_tags",
+      "supportsLongForm": true,
+      "sectionStyleHints": true
+    },
+    "generic": {
+      "stylePromptFormat": "freeform_compact"
+    }
+  },
+
+  "multiAgentPipeline": {
+    "agents": [
+      {
+        "id": "schema_agent",
+        "role": "Normalize and validate config from UI or analysis layer.",
+        "input": ["ui_state", "analysis_summary"],
+        "output": ["normalized_schema"]
+      },
+      {
+        "id": "style_composer_agent",
+        "role": "Turn normalized schema into layered abstract description.",
+        "input": ["normalized_schema"],
+        "output": ["abstract_style_description"]
+      },
+      {
+        "id": "platform_adapter_agent",
+        "role": "Render abstract description for chosen platform.",
+        "input": ["abstract_style_description", "targetPlatform"],
+        "output": ["raw_platform_prompt"]
+      },
+      {
+        "id": "length_controller_agent",
+        "role": "Compress or expand prompt according to length slider under hard cap.",
+        "input": ["raw_platform_prompt", "promptLengthControl"],
+        "output": ["length_adjusted_prompt"]
+      },
+      {
+        "id": "quality_constraints_agent",
+        "role": "Final cleaning, de-dup adjectives, enforce 600 char hard limit, safety.",
+        "input": ["length_adjusted_prompt"],
+        "output": ["final_prompt"]
+      },
+      {
+        "id": "testing_diagnostics_agent",
+        "role": "Generate test cases, log decisions, help regression testing.",
+        "input": ["pipeline_state"],
+        "output": ["diagnostic_report"]
+      }
+    ],
+    "orchestration": {
+      "sharedState": "object",
+      "executionFlow": [
+        "schema_agent",
+        "style_composer_agent",
+        "platform_adapter_agent",
+        "length_controller_agent",
+        "quality_constraints_agent"
+      ],
+      "llmRouting": {
+        "schema_agent": "mistral",
+        "style_composer_agent": "gpt",
+        "platform_adapter_agent": "gpt",
+        "length_controller_agent": "gemini",
+        "quality_constraints_agent": "opus"
+      }
+    }
+  },
+
+  "output": {
+    "finalPrompt": {
+      "type": "string",
+      "maxLength": 600
+    },
+    "characterCount": {
+      "type": "integer"
+    },
+    "modelAttribution": {
+      "chosenAnalyzerModel": "enum: [gpt, opus, gemini, mistral, ollama_local, ensemble]",
+      "confidenceNotes": "string"
+    }
+  }
+}
+```
+
+If you want next, I can:
+
+- Break this into separate `ui_config.json`, `schema.json`, and `agents.json`; or  
+- Draft an example end‑to‑end flow: “You paste a YouTube link → GPT+Gemini interpret → schema sliders pre‑filled → you tweak → Suno‑ready 200‑char style prompt generated under the 600‑char global limit.”
+
+Sources
+[1] Is there a way to give prompts longer than 200 characters? : r/SunoAI https://www.reddit.com/r/SunoAI/comments/1isq1a3/is_there_a_way_to_give_prompts_longer_than_200/
+[2] Generate Suno AI Music - Suno API Documentation https://docs.sunoapi.org/suno-api/generate-music
+[3] Multi-agent prompt orchestration: I tested 500 prompts with role ... https://www.reddit.com/r/PromptEngineering/comments/1osdizw/multiagent_prompt_orchestration_i_tested_500/
+[4] HeartMuLa: A Family of Open Sourced Music Foundation Models https://arxiv.org/html/2601.10547v1
+[5] Fun with Suno AI music - LinkedIn https://www.linkedin.com/pulse/fun-suno-ai-music-sharon-ng-bx2sc
+[6] Exploring HeartMula Music AI Model Integration in ComfyUI https://sonusahani.com/blogs/heartmula
+[7] Why is Suno showing 200 character limit and do I need to go ... https://www.facebook.com/groups/2703779406444247/posts/2853241568164696/
+[8] Increase The Genre Input Character Limit (240 Characters) - Suno https://suno.com/song/61262d52-d00e-4deb-a9e5-6f2e04223f6c
+[9] Inquiry on Maximum input character text prompt Length #36 - GitHub https://github.com/suno-ai/bark/issues/36
+[10] HeartMula Music AI Model In ComfyUI - The Next Level ... - YouTube https://www.youtube.com/watch?v=F9LFAeUbBIs
+[11] Master Suno AI with Effective Music Prompts: Focus on Arrangement https://jackrighteous.com/en-us/blogs/guides-using-suno-ai-music-creation/master-suno-ai-with-effective-music-prompts-focus-on-arrangement
+[12] Orchestrate agent behavior with generative AI - Microsoft Learn https://learn.microsoft.com/en-us/microsoft-copilot-studio/advanced-generative-actions
+[13] Top 5 Prompt Orchestration Platforms for AI Agents in 2026 - Maxim AI https://www.getmaxim.ai/articles/top-5-prompt-orchestration-platforms-for-ai-agents-in-2026/
+[14] How to structure prompts for Suno AI https://howtopromptsuno.com/making-music
+[15] HeartMuLa: A Family of Open Sourced Music Foundation Models https://huggingface.co/papers/2601.10547
+
+
+
+
+{
+  "appMeta": {
+    "name": "MultiAgent Music Prompt Builder",
+    "version": "0.1.0",
+    "description": "Visual composer for AI music prompts with Indian/Tamil focus, multi-LLM analysis, and platform-specific adapters.",
+    "globalConstraints": {
+      "finalPromptMaxChars": 600,
+      "defaultPromptCharsTarget": 300,
+      "minPromptCharsTarget": 120,
+      "maxPromptCharsTarget": 580
+    }
+  },
+
+  "inputs": {
+    "sourceType": "enum: [direct_config, lyrics_text, external_link]",
+    "lyricsText": {
+      "type": "string",
+      "maxLength": 5000
+    },
+    "externalLink": {
+      "type": "string",
+      "format": "uri",
+      "allowedDomains": [
+        "youtube.com",
+        "youtu.be",
+        "spotify.com",
+        "music.apple.com",
+        "soundcloud.com",
+        "bandcamp.com"
+      ]
+    },
+    "analysisLLMs": {
+      "availableModels": [
+        "gpt",
+        "opus",
+        "gemini",
+        "mistral",
+        "ollama_local",
+        "other_custom"
+      ],
+      "defaultModels": ["gpt", "gemini"],
+      "selectionMode": "multi_select",
+      "apiConfigRef": "external_llm_connectors"
+    }
+  },
+
+  "analysisLayer": {
+    "tasks": [
+      "style_extraction",
+      "instrumentation_detection",
+      "vocal_character_detection",
+      "rhythmic_groove_detection",
+      "ornamentation_detection",
+      "mood_arc_detection",
+      "mix_and_space_inference"
+    ],
+    "modelRoles": {
+      "gpt": ["style_extraction", "instrumentation_detection", "mood_arc_detection"],
+      "opus": ["ornamentation_detection", "vocal_character_detection"],
+      "gemini": ["rhythmic_groove_detection", "mix_and_space_inference"],
+      "mistral": ["folk_and_regional_cues"],
+      "ollama_local": ["lightweight_quick_pass", "privacy_sensitive_analysis"]
+    },
+    "conflictResolution": {
+      "strategy": "consensus_weighted",
+      "tieBreaker": "user_preferred_model",
+      "userPreferredModel": "gpt"
+    }
+  },
+
+  "ui": {
+    "sections": [
+      "global",
+      "instruments",
+      "percussion",
+      "guitars",
+      "vocals",
+      "ornamentation",
+      "structure",
+      "mix",
+      "platform",
+      "prompt_output"
+    ],
+    "promptLengthControl": {
+      "type": "slider",
+      "label": "Prompt detail level",
+      "min": 0,
+      "max": 100,
+      "default": 50,
+      "mapping": {
+        "0": 120,
+        "25": 200,
+        "50": 300,
+        "75": 450,
+        "100": 580
+      }
+    }
+  },
+
+  "globalConfig": {
+    "targetPlatform": {
+      "type": "enum",
+      "values": ["suno", "heartmula", "generic"],
+      "default": "suno"
+    },
+    "genre": {
+      "type": "multi_select",
+      "values": [
+        "tamil_film",
+        "carnatic_classical",
+        "tamil_folk",
+        "gaana",
+        "indian_fusion",
+        "bollywood_style",
+        "western_pop",
+        "rock",
+        "edm",
+        "ambient",
+        "cinematic_score",
+        "lofi"
+      ]
+    },
+    "tempo": {
+      "feel": "enum: [slow, medium, fast, variable]",
+      "bpmRange": { "min": 40, "max": 200 }
+    },
+    "moodAxes": {
+      "calm_to_energetic": { "type": "slider", "min": 0, "max": 100 },
+      "dark_to_bright": { "type": "slider", "min": 0, "max": 100 },
+      "intimate_to_epic": { "type": "slider", "min": 0, "max": 100 },
+      "devotional_to_romantic": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "useCase": {
+      "type": "enum",
+      "values": [
+        "full_song",
+        "background_score",
+        "intro_theme",
+        "short_form_video_bgm",
+        "ad_jingle",
+        "podcast_intro"
+      ]
+    }
+  },
+
+  "instrumentation": {
+    "instruments": [
+      {
+        "id": "veena",
+        "category": "melodic",
+        "enabled": false,
+        "intensity": 0,
+        "style": "enum: [legato, plucked, glides, classical_carnatic]",
+        "register": "enum: [low, mid, high]",
+        "stereo": "enum: [center, wide, left, right]"
+      },
+      {
+        "id": "nadaswaram",
+        "category": "melodic",
+        "enabled": false,
+        "intensity": 0,
+        "style": "enum: [festive_bright, sustained, piercing_lead]",
+        "register": "mid",
+        "stereo": "center"
+      },
+      {
+        "id": "mridangam",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": 0,
+        "style": "enum: [tight_classical, cinematic_deep, folk_flavored]",
+        "tala": "enum: [adi, rupaka, misra_chapu, kanda_chapu, other]"
+      },
+      {
+        "id": "tabla",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": 0,
+        "style": "enum: [light_groove, dense_fills, fusion]",
+        "tala": "string"
+      },
+      {
+        "id": "parai",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": 0,
+        "style": "enum: [street_folk, festival_energy]"
+      },
+      {
+        "id": "acoustic_guitar_steel",
+        "category": "guitar",
+        "enabled": false,
+        "intensity": 0,
+        "role": "enum: [rhythm_bed, arpeggios, counter_melody]",
+        "tone": "enum: [bright, warm, percussive]",
+        "effects": {
+          "reverb": false,
+          "delay": false,
+          "chorus": false
+        }
+      },
+      {
+        "id": "electric_guitar_lead",
+        "category": "guitar",
+        "enabled": false,
+        "intensity": 0,
+        "role": "enum: [melodic_lead, riffs, ambient_textures]",
+        "tone": "enum: [clean_glassy, crunchy, high_gain, ambient]",
+        "articulation": "enum: [bends, slides, legato_runs, tremolo_picking]"
+      }
+      /* plus ~40 more instruments defined similarly */
+    ],
+    "percussionGlobal": {
+      "kitPreset": "enum: [mridangam_focus, parai_ensemble, tabla_drumkit_fusion, edm_plus_indian]",
+      "grooveFeel": "enum: [straight, swing, syncopated, complex_tala]",
+      "densityMain": { "type": "slider", "min": 0, "max": 100 },
+      "fillsFrequency": { "type": "slider", "min": 0, "max": 100 },
+      "layering": "enum: [minimal, moderate, dense]"
+    },
+    "guitarsGlobal": {
+      "dominantRole": "enum: [rhythmic, lead, texture, balanced]",
+      "toneAdjectives": [
+        "warm",
+        "bright",
+        "dark",
+        "glassy",
+        "creamy",
+        "aggressive",
+        "lofi",
+        "ambient"
+      ],
+      "effectToggles": {
+        "delay": false,
+        "reverb": true,
+        "chorus": false,
+        "overdrive": false,
+        "distortion": false,
+        "tremolo": false,
+        "wah": false
+      }
+    }
+  },
+
+  "vocals": {
+    "language": {
+      "primary": "enum: [tamil, english, hindi, instrumental_only]",
+      "mix": "enum: [tamil_only, tamil_plus_english, multilingual]"
+    },
+    "role": "enum: [lead_only, lead_plus_harmonies, choir_pads, humming_only]",
+    "genderTimbre": {
+      "gender": "enum: [male, female, mixed, androgynous, childlike]",
+      "tone": ["airy", "nasal", "chesty", "breathy", "raspy", "bright", "dark"]
+    },
+    "style": "enum: [carnatic_classical, light_classical, tamil_folk, tamil_film, pop, rock, devotional]",
+    "emotion": {
+      "calm_to_intense": { "type": "slider", "min": 0, "max": 100 },
+      "happy_to_melancholic": { "type": "slider", "min": 0, "max": 100 },
+      "earthy_to_refined": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "performance": {
+      "vibratoDepth": { "type": "slider", "min": 0, "max": 100 },
+      "ornamentationLevel": { "type": "slider", "min": 0, "max": 100 },
+      "reverbAmount": { "type": "slider", "min": 0, "max": 100 }
+    }
+  },
+
+  "ornamentation": {
+    "hums": {
+      "enabled": false,
+      "position": "enum: [intro, background, throughout]"
+    },
+    "nonLyricalTextures": {
+      "ooh_aah_pads": false,
+      "crowd_chants": false,
+      "claps": false
+    },
+    "carnatic": {
+      "alapana": {
+        "enabled": false,
+        "placement": "enum: [intro, interlude, outro]",
+        "complexity": { "type": "slider", "min": 0, "max": 100 }
+      },
+      "gamakamIntensity": { "type": "slider", "min": 0, "max": 100 },
+      "ragaFlavor": "enum: [kalyani_like, bhairavi_like, kapi_like, hindolam_like, other]",
+      "tanBrigaDensity": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "folk": {
+      "tamilFolkFeel": { "type": "slider", "min": 0, "max": 100 },
+      "gaanaStyle": { "type": "slider", "min": 0, "max": 100 },
+      "festivalEnergy": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "routing": {
+      "appliesToLeadVocal": true,
+      "appliesToSoloInstrument": false,
+      "appliesToBackgroundOnly": false
+    }
+  },
+
+  "structure": {
+    "form": "enum: [intro_verse_chorus_bridge_outro, ab, aaba, loop_based, build_and_drop]",
+    "energyCurve": {
+      "start": { "type": "slider", "min": 0, "max": 100 },
+      "peak": { "type": "slider", "min": 0, "max": 100 },
+      "end": { "type": "slider", "min": 0, "max": 100 },
+      "buildRate": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "sectionHints": {
+      "intro": "string",
+      "verses": "string",
+      "chorus": "string",
+      "bridge": "string",
+      "outro": "string"
+    }
+  },
+
+  "mix": {
+    "mixAdjectives": [
+      "clean",
+      "lush",
+      "cinematic",
+      "raw",
+      "lofi",
+      "vintage",
+      "modern_pop",
+      "club_ready"
+    ],
+    "space": "enum: [dry, room, hall, plate, wide_ambient]",
+    "focus": "enum: [vocal_forward, band_forward, balanced]"
+  },
+
+  "platformAdapters": {
+    "suno": {
+      "stylePromptLimitHint": 200,
+      "useMetaTags": true,
+      "pattern": "genre + tempo + mood + instrumentation + vocal + mix",
+      "forbidSectionTags": true
+    },
+    "heartmula": {
+      "stylePromptFormat": "short_text_tags",
+      "supportsLongForm": true,
+      "sectionStyleHints": true
+    },
+    "generic": {
+      "stylePromptFormat": "freeform_compact"
+    }
+  },
+
+  "multiAgentPipeline": {
+    "agents": [
+      {
+        "id": "schema_agent",
+        "role": "Normalize and validate config from UI or analysis layer.",
+        "input": ["ui_state", "analysis_summary"],
+        "output": ["normalized_schema"]
+      },
+      {
+        "id": "style_composer_agent",
+        "role": "Turn normalized schema into layered abstract description.",
+        "input": ["normalized_schema"],
+        "output": ["abstract_style_description"]
+      },
+      {
+        "id": "platform_adapter_agent",
+        "role": "Render abstract description for chosen platform.",
+        "input": ["abstract_style_description", "targetPlatform"],
+        "output": ["raw_platform_prompt"]
+      },
+      {
+        "id": "length_controller_agent",
+        "role": "Compress or expand prompt according to length slider under hard cap.",
+        "input": ["raw_platform_prompt", "promptLengthControl"],
+        "output": ["length_adjusted_prompt"]
+      },
+      {
+        "id": "quality_constraints_agent",
+        "role": "Final cleaning, de-dup adjectives, enforce 600 char hard limit, safety.",
+        "input": ["length_adjusted_prompt"],
+        "output": ["final_prompt"]
+      },
+      {
+        "id": "testing_diagnostics_agent",
+        "role": "Generate test cases, log decisions, help regression testing.",
+        "input": ["pipeline_state"],
+        "output": ["diagnostic_report"]
+      }
+    ],
+    "orchestration": {
+      "sharedState": "object",
+      "executionFlow": [
+        "schema_agent",
+        "style_composer_agent",
+        "platform_adapter_agent",
+        "length_controller_agent",
+        "quality_constraints_agent"
+      ],
+      "llmRouting": {
+        "schema_agent": "mistral",
+        "style_composer_agent": "gpt",
+        "platform_adapter_agent": "gpt",
+        "length_controller_agent": "gemini",
+        "quality_constraints_agent": "opus"
+      }
+    }
+  },
+
+  "output": {
+    "finalPrompt": {
+      "type": "string",
+      "maxLength": 600
+    },
+    "characterCount": {
+      "type": "integer"
+    },
+    "modelAttribution": {
+      "chosenAnalyzerModel": "enum: [gpt, opus, gemini, mistral, ollama_local, ensemble]",
+      "confidenceNotes": "string"
+    }
+  }
+}
+
+
+
+
+
+{
+  "ui": {
+    "controlStyles": {
+      "slider": { "continuous": true, "step": 1 },
+      "knob": { "continuous": true, "step": 1, "circular": true }
+    },
+    "macroCoherenceControls": {
+      "overall_density": {
+        "type": "knob",
+        "min": 0,
+        "max": 100,
+        "default": 50,
+        "linksTo": [
+          "instrumentation.percussionGlobal.densityMain",
+          "instrumentation.percussionGlobal.fillsFrequency",
+          "ornamentation.carnatic.tanBrigaDensity",
+          "ornamentation.folk.festivalEnergy",
+          "vocals.performance.ornamentationLevel"
+        ]
+      },
+      "clarity_vs_complexity": {
+        "type": "knob",
+        "min": 0,
+        "max": 100,
+        "default": 40,
+        "description": "Push left for sparse, clear arrangements; right for dense, complex textures.",
+        "linksInverse": [
+          "instrumentation.maxActiveInstruments",
+          "ornamentation.carnatic.alapana.complexity",
+          "ornamentation.carnatic.gamakamIntensity"
+        ]
+      },
+      "vocal_vs_instrumental_focus": {
+        "type": "knob",
+        "min": 0,
+        "max": 100,
+        "default": 60,
+        "links": {
+          "0_to_40": [
+            "instrumentation.melodicEmphasis",
+            "instrumentation.guitarsGlobal.dominantRole"
+          ],
+          "60_to_100": [
+            "vocals.level",
+            "vocals.role",
+            "vocals.performance.reverbAmount"
+          ]
+        }
+      }
+    }
+  },
+
+  "instrumentation": {
+    "maxActiveInstruments": 12,
+    "melodicEmphasis": { "type": "slider", "min": 0, "max": 100 },
+    "instruments": [
+      {
+        "id": "veena",
+        "category": "melodic",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "articulationDetail": {
+          "type": "slider",
+          "min": 0,
+          "max": 100,
+          "label": "Slides / gamaka detail"
+        },
+        "style": [
+          "classical_carnatic",
+          "film_melodic",
+          "background_arps",
+          "solo_improv"
+        ],
+        "register": ["low", "mid", "high"],
+        "stereo": ["center", "wide", "left", "right"],
+        "conditionalLocks": {
+          "whenGenreIncludes": ["carnatic_classical"],
+          "forceStyleOneOf": ["classical_carnatic", "solo_improv"]
+        }
+      },
+      {
+        "id": "nadaswaram",
+        "category": "melodic",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "style": [
+          "temple_procession",
+          "wedding_fanfare",
+          "folk_lead",
+          "cinematic_climax"
+        ],
+        "brightness": { "type": "slider", "min": 0, "max": 100 },
+        "register": ["mid", "high"]
+      },
+      {
+        "id": "mridangam",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "style": [
+          "tight_classical",
+          "cinematic_bass_heavy",
+          "light_folk_flavor"
+        ],
+        "tala": ["adi", "rupaka", "misra_chapu", "kanda_chapu", "other"],
+        "micAmbience": { "type": "slider", "min": 0, "max": 100 },
+        "swing": { "type": "slider", "min": 0, "max": 100 }
+      },
+      {
+        "id": "tabla",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "style": [
+          "light_theka",
+          "dense_fills",
+          "fusion_with_drumkit",
+          "cinematic_rolls"
+        ]
+      },
+      {
+        "id": "drumkit_acoustic",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "style": [
+          "tight_pop",
+          "rock",
+          "jazz_brushes",
+          "big_room_cinematic"
+        ],
+        "kickWeight": { "type": "slider", "min": 0, "max": 100 },
+        "snareSnap": { "type": "slider", "min": 0, "max": 100 },
+        "cymbalWash": { "type": "slider", "min": 0, "max": 100 }
+      },
+      {
+        "id": "parai",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "style": ["street_folk", "gaana_support", "festival_peak"],
+        "stereo": ["wide", "left", "right"]
+      },
+      {
+        "id": "acoustic_guitar_steel",
+        "category": "guitar",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "role": [
+          "rhythm_bed",
+          "arpeggios",
+          "percussive_strums",
+          "counter_melody"
+        ],
+        "strumComplexity": { "type": "slider", "min": 0, "max": 100 },
+        "tone": ["bright", "warm", "dark", "sparkly"],
+        "effects": {
+          "reverb": { "type": "knob", "min": 0, "max": 100 },
+          "delay": { "type": "knob", "min": 0, "max": 100 },
+          "chorus": { "type": "knob", "min": 0, "max": 100 }
+        }
+      },
+      {
+        "id": "electric_guitar_lead",
+        "category": "guitar",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "role": ["melodic_lead", "riffs", "ambient_textures"],
+        "gain": { "type": "knob", "min": 0, "max": 100 },
+        "articulationDetail": {
+          "type": "slider",
+          "min": 0,
+          "max": 100,
+          "label": "Bends / slides / legato"
+        },
+        "effects": {
+          "overdrive": { "type": "knob", "min": 0, "max": 100 },
+          "distortion": { "type": "knob", "min": 0, "max": 100 },
+          "delay": { "type": "knob", "min": 0, "max": 100 },
+          "reverb": { "type": "knob", "min": 0, "max": 100 }
+        }
+      }
+      /* extend similarly for pads, synths, strings, flutes, violin, basses, etc. */
+    ]
+  },
+
+  "vocals": {
+    "level": { "type": "knob", "min": 0, "max": 100, "default": 70 },
+    "density": {
+      "type": "slider",
+      "min": 0,
+      "max": 100,
+      "label": "Number of vocal layers / harmonies"
+    },
+    "lineComplexity": {
+      "type": "slider",
+      "min": 0,
+      "max": 100,
+      "label": "Melodic & rhythmic complexity"
+    },
+    "rhythmicTightness": { "type": "slider", "min": 0, "max": 100 },
+    "language": {
+      "primary": ["tamil", "english", "hindi", "instrumental_only"],
+      "codeSwitching": {
+        "type": "slider",
+        "min": 0,
+        "max": 100,
+        "label": "Tamil ↔ English mix"
+      }
+    },
+    "role": [
+      "lead_only",
+      "lead_plus_harmonies",
+      "hook_chant",
+      "choir_pads",
+      "humming_only"
+    ],
+    "genderTimbre": {
+      "genderBlend": {
+        "type": "knob",
+        "min": 0,
+        "max": 100,
+        "label": "Male ↔ Female blend"
+      },
+      "toneSliders": {
+        "airy": { "type": "slider", "min": 0, "max": 100 },
+        "nasal": { "type": "slider", "min": 0, "max": 100 },
+        "chesty": { "type": "slider", "min": 0, "max": 100 },
+        "breathy": { "type": "slider", "min": 0, "max": 100 },
+        "raspy": { "type": "slider", "min": 0, "max": 100 },
+        "brightness": { "type": "slider", "min": 0, "max": 100 }
+      }
+    },
+    "style": [
+      "carnatic_classical",
+      "light_classical",
+      "tamil_folk",
+      "gaana",
+      "tamil_film_ballad",
+      "tamil_film_mass",
+      "pop",
+      "rock",
+      "devotional"
+    ],
+    "phrasing": {
+      "legato_vs_staccato": { "type": "slider", "min": 0, "max": 100 },
+      "syncopation": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "performance": {
+      "vibratoDepth": { "type": "knob", "min": 0, "max": 100 },
+      "ornamentationLevel": { "type": "knob", "min": 0, "max": 100 },
+      "pitchSlides": { "type": "slider", "min": 0, "max": 100 },
+      "reverbAmount": { "type": "knob", "min": 0, "max": 100 },
+      "delayAmount": { "type": "knob", "min": 0, "max": 100 }
+    },
+    "conditionalGuards": {
+      "ifStyleIncludes": ["carnatic_classical"],
+      "thenMinOrnamentationLevel": 40,
+      "thenMinPitchSlides": 30
+    }
+  },
+
+  "coherenceRules": {
+    "maxSimultaneousLeads": 2,
+    "rules": [
+      {
+        "id": "limit_high_density_all",
+        "if": {
+          "overall_density": { "greaterThan": 80 },
+          "clarity_vs_complexity": { "lessThan": 30 }
+        },
+        "then": [
+          { "setMax": ["vocals.density", 60] },
+          { "setMax": ["instrumentation.instruments[*].intensity", 80] },
+          { "forceDisable": ["ornamentation.hums.enabled"], "weight": 0.5 }
+        ]
+      },
+      {
+        "id": "prevent_vocal_guitar_clash",
+        "if": {
+          "vocals.level": { "greaterThan": 70 },
+          "instrumentation.electric_guitar_lead.intensity": { "greaterThan": 70 }
+        },
+        "then": [
+          { "reduce": ["instrumentation.electric_guitar_lead.intensity", 20] },
+          { "orReduce": ["vocals.level", 10] }
+        ]
+      },
+      {
+        "id": "limit_ornamentation_with_fast_tempo",
+        "if": {
+          "globalConfig.tempo.feel": "fast",
+          "vocals.lineComplexity": { "greaterThan": 70 }
+        },
+        "then": [
+          { "setMax": ["ornamentation.carnatic.tanBrigaDensity", 60] },
+          { "setMax": ["ornamentation.carnatic.alapana.complexity", 50] }
+        ]
+      }
+    ]
+  }
+}
+
+
+
+
+
+{
+  "presets": [
+    {
+      "id": "tamil_film_ballad_80s",
+      "label": "Tamil film ballad – 80s",
+      "tags": ["tamil_film", "80s", "romantic", "strings"],
+      "globalConfig": {
+        "genre": ["tamil_film"],
+        "tempo": { "feel": "slow" },
+        "moodAxes": {
+          "calm_to_energetic": 40,
+          "dark_to_bright": 60,
+          "intimate_to_epic": 65,
+          "devotional_to_romantic": 70
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "veena": { "enabled": true, "intensity": 40, "style": "film_melodic" },
+          "violin_section": { "enabled": true, "intensity": 80, "style": "legato_strings" },
+          "mridangam": { "enabled": false },
+          "tabla": { "enabled": false },
+          "drumkit_acoustic": { "enabled": true, "intensity": 30, "style": "soft_brushes" },
+          "bass_guitar": { "enabled": true, "intensity": 50, "style": "warm_sustained" },
+          "pad_soft": { "enabled": true, "intensity": 40, "style": "analog_warm" }
+        }
+      },
+      "vocals": {
+        "level": 80,
+        "density": 40,
+        "lineComplexity": 45,
+        "rhythmicTightness": 60,
+        "language": { "primary": "tamil", "codeSwitching": 0 },
+        "role": ["lead_plus_harmonies"],
+        "style": ["tamil_film_ballad"],
+        "genderTimbre": {
+          "genderBlend": 40,
+          "toneSliders": { "airy": 30, "chesty": 60, "brightness": 50 }
+        },
+        "performance": {
+          "vibratoDepth": 40,
+          "ornamentationLevel": 35,
+          "pitchSlides": 35,
+          "reverbAmount": 60,
+          "delayAmount": 20
+        }
+      },
+      "ornamentation": {
+        "carnatic": { "alapana": { "enabled": false }, "gamakamIntensity": 20 },
+        "folk": { "tamilFolkFeel": 0 }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 30, "peak": 70, "end": 40, "buildRate": 50 }
+      },
+      "mix": {
+        "mixAdjectives": ["lush", "cinematic", "vintage"],
+        "space": "hall",
+        "focus": "vocal_forward"
+      },
+      "microPromptPreview": "80s-style Tamil film ballad, slow and romantic, lush strings, soft acoustic drums and warm bass, emotional Tamil lead vocals with gentle harmonies and hall reverb.",
+      "coherenceColor": "dynamic"
+    },
+
+    {
+      "id": "tamil_mass_song_2010s",
+      "label": "Tamil mass song – 2010s",
+      "tags": ["tamil_film", "mass", "high_energy", "electronic"],
+      "globalConfig": {
+        "genre": ["tamil_film", "indian_fusion"],
+        "tempo": { "feel": "fast" },
+        "moodAxes": {
+          "calm_to_energetic": 90,
+          "dark_to_bright": 70,
+          "intimate_to_epic": 80,
+          "devotional_to_romantic": 40
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "drumkit_acoustic": { "enabled": true, "intensity": 85, "style": "rock" },
+          "edm_drums": { "enabled": true, "intensity": 80, "style": "festival" },
+          "parai": { "enabled": true, "intensity": 75, "style": "festive_peak" },
+          "synth_bass": { "enabled": true, "intensity": 85, "style": "aggressive" },
+          "electric_guitar_lead": { "enabled": true, "intensity": 70, "gain": 70 },
+          "brass_synth": { "enabled": true, "intensity": 60 },
+          "pad_hype": { "enabled": true, "intensity": 50 }
+        },
+        "percussionGlobal": {
+          "kitPreset": "edm_plus_indian",
+          "grooveFeel": "straight",
+          "densityMain": 85,
+          "fillsFrequency": 70,
+          "layering": "dense"
+        }
+      },
+      "vocals": {
+        "level": 85,
+        "density": 70,
+        "lineComplexity": 55,
+        "rhythmicTightness": 80,
+        "language": { "primary": "tamil", "codeSwitching": 30 },
+        "role": ["lead_plus_harmonies", "hook_chant"],
+        "style": ["tamil_film_mass", "gaana"],
+        "genderTimbre": {
+          "genderBlend": 60,
+          "toneSliders": { "chesty": 70, "raspy": 40, "brightness": 65 }
+        },
+        "performance": {
+          "vibratoDepth": 20,
+          "ornamentationLevel": 30,
+          "pitchSlides": 30,
+          "reverbAmount": 50,
+          "delayAmount": 40
+        }
+      },
+      "ornamentation": {
+        "hums": { "enabled": false },
+        "folk": { "tamilFolkFeel": 70, "gaanaStyle": 80, "festivalEnergy": 90 },
+        "carnatic": { "gamakamIntensity": 20 }
+      },
+      "structure": {
+        "form": "build_and_drop",
+        "energyCurve": { "start": 60, "peak": 95, "end": 70, "buildRate": 80 }
+      },
+      "mix": {
+        "mixAdjectives": ["modern_pop", "club_ready", "punchy"],
+        "space": "wide_ambient",
+        "focus": "balanced"
+      },
+      "microPromptPreview": "High-energy Tamil mass track with EDM drums, parai, aggressive synth bass and rock guitars, crowd-chant hooks and gaana-influenced Tamil vocals in a festival-style mix.",
+      "coherenceColor": "dynamic"
+    },
+
+    {
+      "id": "carnatic_kriti_traditional",
+      "label": "Carnatic kriti – traditional",
+      "tags": ["carnatic_classical", "devotional", "acoustic"],
+      "globalConfig": {
+        "genre": ["carnatic_classical"],
+        "tempo": { "feel": "medium" },
+        "moodAxes": {
+          "calm_to_energetic": 55,
+          "dark_to_bright": 60,
+          "intimate_to_epic": 50,
+          "devotional_to_romantic": 90
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "veena": { "enabled": false },
+          "vocal_drone_tanpura": { "enabled": true, "intensity": 80 },
+          "violin_solo": { "enabled": true, "intensity": 60, "style": "gAyaki_style" },
+          "mridangam": { "enabled": true, "intensity": 70, "style": "tight_classical", "tala": "adi" },
+          "ghatam": { "enabled": true, "intensity": 40 },
+          "kanjira": { "enabled": true, "intensity": 35 }
+        },
+        "percussionGlobal": {
+          "kitPreset": "mridangam_focus",
+          "grooveFeel": "complex_tala",
+          "densityMain": 60,
+          "fillsFrequency": 50,
+          "layering": "moderate"
+        }
+      },
+      "vocals": {
+        "level": 85,
+        "density": 60,
+        "lineComplexity": 75,
+        "rhythmicTightness": 75,
+        "language": { "primary": "tamil", "codeSwitching": 0 },
+        "role": ["lead_only"],
+        "style": ["carnatic_classical", "devotional"],
+        "genderTimbre": {
+          "genderBlend": 50,
+          "toneSliders": { "brightness": 60, "chesty": 50 }
+        },
+        "performance": {
+          "vibratoDepth": 15,
+          "ornamentationLevel": 80,
+          "pitchSlides": 80,
+          "reverbAmount": 35,
+          "delayAmount": 0
+        }
+      },
+      "ornamentation": {
+        "carnatic": {
+          "alapana": { "enabled": true, "placement": "intro", "complexity": 70 },
+          "gamakamIntensity": 85,
+          "ragaFlavor": "kalyani_like",
+          "tanBrigaDensity": 70
+        },
+        "folk": { "tamilFolkFeel": 0 }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 50, "peak": 75, "end": 50, "buildRate": 55 }
+      },
+      "mix": {
+        "mixAdjectives": ["clean", "intimate", "acoustic"],
+        "space": "room",
+        "focus": "vocal_forward"
+      },
+      "microPromptPreview": "Traditional Carnatic kriti with tanpura drone, violin accompaniment and mridangam, devotional Tamil vocal in gAyaki style with rich gamakam and raga-based alapana intro.",
+      "coherenceColor": "dynamic"
+    },
+
+    {
+      "id": "carnatic_fusion_ambient",
+      "label": "Carnatic fusion – ambient",
+      "tags": ["carnatic_classical", "ambient", "fusion"],
+      "globalConfig": {
+        "genre": ["carnatic_classical", "ambient", "indian_fusion"],
+        "tempo": { "feel": "slow" },
+        "moodAxes": {
+          "calm_to_energetic": 30,
+          "dark_to_bright": 55,
+          "intimate_to_epic": 70,
+          "devotional_to_romantic": 80
+        },
+        "useCase": "background_score"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "veena": { "enabled": true, "intensity": 55, "style": "solo_improv" },
+          "pad_soft": { "enabled": true, "intensity": 70, "style": "shimmering" },
+          "ambient_guitars": { "enabled": true, "intensity": 50 },
+          "mridangam": { "enabled": true, "intensity": 40, "style": "light_folk_flavor" },
+          "soft_perc_textures": { "enabled": true, "intensity": 30 }
+        }
+      },
+      "vocals": {
+        "level": 50,
+        "density": 20,
+        "lineComplexity": 50,
+        "rhythmicTightness": 50,
+        "language": { "primary": "tamil", "codeSwitching": 0 },
+        "role": ["humming_only", "choir_pads"],
+        "style": ["light_classical", "devotional"],
+        "performance": {
+          "vibratoDepth": 25,
+          "ornamentationLevel": 45,
+          "pitchSlides": 45,
+          "reverbAmount": 80,
+          "delayAmount": 40
+        }
+      },
+      "ornamentation": {
+        "hums": { "enabled": true, "position": "background" },
+        "carnatic": {
+          "alapana": { "enabled": true, "placement": "intro", "complexity": 40 },
+          "gamakamIntensity": 60,
+          "ragaFlavor": "hindolam_like"
+        }
+      },
+      "structure": {
+        "form": "loop_based",
+        "energyCurve": { "start": 30, "peak": 55, "end": 35, "buildRate": 30 }
+      },
+      "mix": {
+        "mixAdjectives": ["ambient", "lush", "cinematic"],
+        "space": "wide_ambient",
+        "focus": "balanced"
+      },
+      "microPromptPreview": "Ambient Carnatic fusion bed with veena improvisations, shimmering pads, soft mridangam and humming Tamil vocals, spacious devotional atmosphere inspired by raga colors.",
+      "coherenceColor": "dynamic"
+    },
+
+    {
+      "id": "tamil_folk_parai_dance",
+      "label": "Tamil folk parai dance",
+      "tags": ["tamil_folk", "dance", "parai"],
+      "globalConfig": {
+        "genre": ["tamil_folk"],
+        "tempo": { "feel": "fast" },
+        "moodAxes": {
+          "calm_to_energetic": 95,
+          "dark_to_bright": 70,
+          "intimate_to_epic": 75,
+          "devotional_to_romantic": 40
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "parai": { "enabled": true, "intensity": 90, "style": "festival_peak" },
+          "nadaswaram": { "enabled": true, "intensity": 75, "style": "folk_lead" },
+          "tavil": { "enabled": true, "intensity": 80 },
+          "claps": { "enabled": true, "intensity": 60 },
+          "bass_folk": { "enabled": true, "intensity": 50 }
+        },
+        "percussionGlobal": {
+          "kitPreset": "parai_ensemble",
+          "grooveFeel": "straight",
+          "densityMain": 90,
+          "fillsFrequency": 80,
+          "layering": "dense"
+        }
+      },
+      "vocals": {
+        "level": 80,
+        "density": 65,
+        "lineComplexity": 55,
+        "rhythmicTightness": 85,
+        "language": { "primary": "tamil", "codeSwitching": 0 },
+        "role": ["lead_plus_harmonies", "hook_chant"],
+        "style": ["tamil_folk", "gaana"],
+        "performance": {
+          "vibratoDepth": 10,
+          "ornamentationLevel": 35,
+          "pitchSlides": 35,
+          "reverbAmount": 35,
+          "delayAmount": 25
+        }
+      },
+      "ornamentation": {
+        "folk": {
+          "tamilFolkFeel": 95,
+          "gaanaStyle": 75,
+          "festivalEnergy": 95
+        },
+        "hums": { "enabled": false }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 70, "peak": 100, "end": 80, "buildRate": 90 }
+      },
+      "mix": {
+        "mixAdjectives": ["raw", "lively", "crowd_energy"],
+        "space": "room",
+        "focus": "band_forward"
+      },
+      "microPromptPreview": "Fast Tamil folk dance with powerful parai ensemble, nadaswaram and tavil, earthy village-style Tamil vocals and shout-style hooks in a raw, lively festival atmosphere.",
+      "coherenceColor": "dynamic"
+    },
+
+    {
+      "id": "tamil_devotional_soft",
+      "label": "Tamil devotional – soft",
+      "tags": ["devotional", "soft", "temple"],
+      "globalConfig": {
+        "genre": ["tamil_film", "devotional", "carnatic_classical"],
+        "tempo": { "feel": "slow" },
+        "moodAxes": {
+          "calm_to_energetic": 35,
+          "dark_to_bright": 65,
+          "intimate_to_epic": 60,
+          "devotional_to_romantic": 95
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "veena": { "enabled": true, "intensity": 50, "style": "film_melodic" },
+          "harmonium": { "enabled": true, "intensity": 45 },
+          "mridangam": { "enabled": true, "intensity": 40, "style": "tight_classical" },
+          "soft_flute": { "enabled": true, "intensity": 55 },
+          "temple_bells": { "enabled": true, "intensity": 35 }
+        }
+      },
+      "vocals": {
+        "level": 80,
+        "density": 40,
+        "lineComplexity": 55,
+        "rhythmicTightness": 60,
+        "language": { "primary": "tamil", "codeSwitching": 10 },
+        "role": ["lead_plus_harmonies"],
+        "style": ["devotional", "light_classical"],
+        "performance": {
+          "vibratoDepth": 25,
+          "ornamentationLevel": 55,
+          "pitchSlides": 55,
+          "reverbAmount": 55,
+          "delayAmount": 20
+        }
+      },
+      "ornamentation": {
+        "carnatic": {
+          "alapana": { "enabled": true, "placement": "intro", "complexity": 40 },
+          "gamakamIntensity": 60,
+          "ragaFlavor": "bhairavi_like"
+        },
+        "hums": { "enabled": true, "position": "intro" }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 40, "peak": 70, "end": 45, "buildRate": 45 }
+      },
+      "mix": {
+        "mixAdjectives": ["soothing", "warm", "spiritual"],
+        "space": "hall",
+        "focus": "vocal_forward"
+      },
+      "microPromptPreview": "Soft Tamil devotional song with veena, harmonium, mridangam and temple bells, gentle Tamil devotional vocals with light gamakam and a warm spiritual hall ambience.",
+      "coherenceColor": "dynamic"
+    },
+
+    {
+      "id": "indian_fusion_guitar_rock",
+      "label": "Indian fusion – guitar rock",
+      "tags": ["indian_fusion", "rock", "guitar"],
+      "globalConfig": {
+        "genre": ["indian_fusion", "rock"],
+        "tempo": { "feel": "medium" },
+        "moodAxes": {
+          "calm_to_energetic": 70,
+          "dark_to_bright": 60,
+          "intimate_to_epic": 75,
+          "devotional_to_romantic": 50
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "electric_guitar_lead": { "enabled": true, "intensity": 80, "gain": 75 },
+          "electric_guitar_rhythm": { "enabled": true, "intensity": 70 },
+          "bass_guitar": { "enabled": true, "intensity": 70 },
+          "drumkit_acoustic": { "enabled": true, "intensity": 80, "style": "rock" },
+          "tabla": { "enabled": true, "intensity": 40, "style": "fusion_with_drumkit" },
+          "synth_pads": { "enabled": true, "intensity": 40 }
+        }
+      },
+      "vocals": {
+        "level": 80,
+        "density": 55,
+        "lineComplexity": 60,
+        "rhythmicTightness": 75,
+        "language": { "primary": "tamil", "codeSwitching": 40 },
+        "role": ["lead_plus_harmonies"],
+        "style": ["tamil_film", "rock"],
+        "performance": {
+          "vibratoDepth": 35,
+          "ornamentationLevel": 40,
+          "pitchSlides": 40,
+          "reverbAmount": 50,
+          "delayAmount": 35
+        }
+      },
+      "ornamentation": {
+        "carnatic": { "gamakamIntensity": 35, "ragaFlavor": "kapi_like" },
+        "folk": { "tamilFolkFeel": 20 }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 50, "peak": 85, "end": 60, "buildRate": 65 }
+      },
+      "mix": {
+        "mixAdjectives": ["punchy", "modern_pop", "guitar_forward"],
+        "space": "room",
+        "focus": "band_forward"
+      },
+      "microPromptPreview": "Indian fusion rock track with driving drums, electric guitars and tabla layers, Tamil-rock vocals with light raga flavor and a punchy, guitar-forward modern mix.",
+      "coherenceColor": "dynamic"
+    },
+
+    {
+      "id": "90s_tamil_pop_duet",
+      "label": "90s Tamil pop duet",
+      "tags": ["tamil_film", "90s", "duet"],
+      "globalConfig": {
+        "genre": ["tamil_film", "pop"],
+        "tempo": { "feel": "medium" },
+        "moodAxes": {
+          "calm_to_energetic": 60,
+          "dark_to_bright": 65,
+          "intimate_to_epic": 70,
+          "devotional_to_romantic": 65
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "drum_machine_90s": { "enabled": true, "intensity": 60 },
+          "bass_synth_round": { "enabled": true, "intensity": 55 },
+          "acoustic_guitar_steel": { "enabled": true, "intensity": 50 },
+          "flute": { "enabled": true, "intensity": 45 },
+          "strings_ensemble": { "enabled": true, "intensity": 65 },
+          "bells_mallets": { "enabled": true, "intensity": 35 }
+        }
+      },
+      "vocals": {
+        "level": 85,
+        "density": 60,
+        "lineComplexity": 55,
+        "rhythmicTightness": 70,
+        "language": { "primary": "tamil", "codeSwitching": 10 },
+        "role": ["lead_plus_harmonies"],
+        "style": ["tamil_film_ballad"],
+        "genderTimbre": {
+          "genderBlend": 50,
+          "toneSliders": { "brightness": 65, "airy": 40, "chesty": 55 }
+        },
+        "performance": {
+          "vibratoDepth": 35,
+          "ornamentationLevel": 40,
+          "pitchSlides": 35,
+          "reverbAmount": 55,
+          "delayAmount": 25
+        }
+      },
+      "ornamentation": {
+        "carnatic": { "gamakamIntensity": 30 },
+        "hums": { "enabled": true, "position": "outro" }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 45, "peak": 75, "end": 50, "buildRate": 55 }
+      },
+      "mix": {
+        "mixAdjectives": ["nostalgic", "warm", "melodic"],
+        "space": "hall",
+        "focus": "vocal_forward"
+      },
+      "microPromptPreview": "90s-style Tamil pop duet with drum-machine groove, soft synth bass, acoustic guitar and flute, warm nostalgic Tamil vocals and lush string pads.",
+      "coherenceColor": "dynamic"
+    }
+    /* Add more in same pattern until you reach 25–50 presets */
+  ]
+}
+
+
+
+
+
+
+{
+  "appMeta": {
+    "name": "MultiAgent Music Prompt Builder",
+    "version": "0.1.0",
+    "description": "Visual composer for AI music prompts with Indian/Tamil focus, multi-LLM analysis, and platform-specific adapters.",
+    "globalConstraints": {
+      "finalPromptMaxChars": 600,
+      "defaultPromptCharsTarget": 300,
+      "minPromptCharsTarget": 120,
+      "maxPromptCharsTarget": 580
+    }
+  },
+
+  "inputs": {
+    "sourceType": "enum: [direct_config, lyrics_text, external_link]",
+    "lyricsText": {
+      "type": "string",
+      "maxLength": 5000
+    },
+    "externalLink": {
+      "type": "string",
+      "format": "uri",
+      "allowedDomains": [
+        "youtube.com",
+        "youtu.be",
+        "spotify.com",
+        "music.apple.com",
+        "soundcloud.com",
+        "bandcamp.com"
+      ]
+    },
+    "analysisLLMs": {
+      "availableModels": [
+        "gpt",
+        "opus",
+        "gemini",
+        "mistral",
+        "ollama_local",
+        "other_custom"
+      ],
+      "defaultModels": ["gpt", "gemini"],
+      "selectionMode": "multi_select",
+      "apiConfigRef": "external_llm_connectors"
+    }
+  },
+
+  "analysisLayer": {
+    "tasks": [
+      "style_extraction",
+      "instrumentation_detection",
+      "vocal_character_detection",
+      "rhythmic_groove_detection",
+      "ornamentation_detection",
+      "mood_arc_detection",
+      "mix_and_space_inference"
+    ],
+    "modelRoles": {
+      "gpt": ["style_extraction", "instrumentation_detection", "mood_arc_detection"],
+      "opus": ["ornamentation_detection", "vocal_character_detection"],
+      "gemini": ["rhythmic_groove_detection", "mix_and_space_inference"],
+      "mistral": ["folk_and_regional_cues"],
+      "ollama_local": ["lightweight_quick_pass", "privacy_sensitive_analysis"]
+    },
+    "conflictResolution": {
+      "strategy": "consensus_weighted",
+      "tieBreaker": "user_preferred_model",
+      "userPreferredModel": "gpt"
+    }
+  },
+
+  "ui": {
+    "sections": [
+      "global",
+      "instruments",
+      "percussion",
+      "guitars",
+      "vocals",
+      "ornamentation",
+      "structure",
+      "mix",
+      "platform",
+      "prompt_output",
+      "presets"
+    ],
+    "controlStyles": {
+      "slider": { "continuous": true, "step": 1 },
+      "knob": { "continuous": true, "step": 1, "circular": true }
+    },
+    "promptLengthControl": {
+      "type": "slider",
+      "label": "Prompt detail level",
+      "min": 0,
+      "max": 100,
+      "default": 50,
+      "mapping": {
+        "0": 120,
+        "25": 200,
+        "50": 300,
+        "75": 450,
+        "100": 580
+      }
+    },
+    "macroCoherenceControls": {
+      "overall_density": {
+        "type": "knob",
+        "min": 0,
+        "max": 100,
+        "default": 50,
+        "linksTo": [
+          "instrumentation.percussionGlobal.densityMain",
+          "instrumentation.percussionGlobal.fillsFrequency",
+          "ornamentation.carnatic.tanBrigaDensity",
+          "ornamentation.folk.festivalEnergy",
+          "vocals.performance.ornamentationLevel"
+        ]
+      },
+      "clarity_vs_complexity": {
+        "type": "knob",
+        "min": 0,
+        "max": 100,
+        "default": 40,
+        "description": "Push left for sparse, clear arrangements; right for dense, complex textures.",
+        "linksInverse": [
+          "instrumentation.maxActiveInstruments",
+          "ornamentation.carnatic.alapana.complexity",
+          "ornamentation.carnatic.gamakamIntensity"
+        ]
+      },
+      "vocal_vs_instrumental_focus": {
+        "type": "knob",
+        "min": 0,
+        "max": 100,
+        "default": 60,
+        "links": {
+          "0_to_40": [
+            "instrumentation.melodicEmphasis",
+            "instrumentation.guitarsGlobal.dominantRole"
+          ],
+          "60_to_100": [
+            "vocals.level",
+            "vocals.role",
+            "vocals.performance.reverbAmount"
+          ]
+        }
+      }
+    }
+  },
+
+  "globalConfig": {
+    "targetPlatform": {
+      "type": "enum",
+      "values": ["suno", "heartmula", "generic"],
+      "default": "suno"
+    },
+    "genre": {
+      "type": "multi_select",
+      "values": [
+        "tamil_film",
+        "carnatic_classical",
+        "tamil_folk",
+        "gaana",
+        "indian_fusion",
+        "bollywood_style",
+        "western_pop",
+        "rock",
+        "edm",
+        "ambient",
+        "cinematic_score",
+        "lofi",
+        "devotional"
+      ]
+    },
+    "tempo": {
+      "feel": "enum: [slow, medium, fast, variable]",
+      "bpmRange": { "min": 40, "max": 200 }
+    },
+    "moodAxes": {
+      "calm_to_energetic": { "type": "slider", "min": 0, "max": 100 },
+      "dark_to_bright": { "type": "slider", "min": 0, "max": 100 },
+      "intimate_to_epic": { "type": "slider", "min": 0, "max": 100 },
+      "devotional_to_romantic": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "useCase": {
+      "type": "enum",
+      "values": [
+        "full_song",
+        "background_score",
+        "intro_theme",
+        "short_form_video_bgm",
+        "ad_jingle",
+        "podcast_intro"
+      ]
+    }
+  },
+
+  "instrumentation": {
+    "maxActiveInstruments": 12,
+    "melodicEmphasis": { "type": "slider", "min": 0, "max": 100 },
+    "percussionGlobal": {
+      "kitPreset": "enum: [mridangam_focus, parai_ensemble, tabla_drumkit_fusion, edm_plus_indian]",
+      "grooveFeel": "enum: [straight, swing, syncopated, complex_tala]",
+      "densityMain": { "type": "slider", "min": 0, "max": 100 },
+      "fillsFrequency": { "type": "slider", "min": 0, "max": 100 },
+      "layering": "enum: [minimal, moderate, dense]"
+    },
+    "guitarsGlobal": {
+      "dominantRole": "enum: [rhythmic, lead, texture, balanced]",
+      "toneAdjectives": [
+        "warm",
+        "bright",
+        "dark",
+        "glassy",
+        "creamy",
+        "aggressive",
+        "lofi",
+        "ambient"
+      ],
+      "effectToggles": {
+        "delay": false,
+        "reverb": true,
+        "chorus": false,
+        "overdrive": false,
+        "distortion": false,
+        "tremolo": false,
+        "wah": false
+      }
+    },
+    "instruments": [
+      {
+        "id": "veena",
+        "category": "melodic",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "articulationDetail": {
+          "type": "slider",
+          "min": 0,
+          "max": 100,
+          "label": "Slides / gamaka detail"
+        },
+        "style": [
+          "classical_carnatic",
+          "film_melodic",
+          "background_arps",
+          "solo_improv"
+        ],
+        "register": ["low", "mid", "high"],
+        "stereo": ["center", "wide", "left", "right"],
+        "conditionalLocks": {
+          "whenGenreIncludes": ["carnatic_classical"],
+          "forceStyleOneOf": ["classical_carnatic", "solo_improv"]
+        }
+      },
+      {
+        "id": "nadaswaram",
+        "category": "melodic",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "style": [
+          "temple_procession",
+          "wedding_fanfare",
+          "folk_lead",
+          "cinematic_climax"
+        ],
+        "brightness": { "type": "slider", "min": 0, "max": 100 },
+        "register": ["mid", "high"]
+      },
+      {
+        "id": "mridangam",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "style": [
+          "tight_classical",
+          "cinematic_bass_heavy",
+          "light_folk_flavor"
+        ],
+        "tala": ["adi", "rupaka", "misra_chapu", "kanda_chapu", "other"],
+        "micAmbience": { "type": "slider", "min": 0, "max": 100 },
+        "swing": { "type": "slider", "min": 0, "max": 100 }
+      },
+      {
+        "id": "tabla",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "style": [
+          "light_theka",
+          "dense_fills",
+          "fusion_with_drumkit",
+          "cinematic_rolls"
+        ]
+      },
+      {
+        "id": "parai",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "style": ["street_folk", "gaana_support", "festival_peak"],
+        "stereo": ["wide", "left", "right"]
+      },
+      {
+        "id": "drumkit_acoustic",
+        "category": "percussion",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "style": [
+          "tight_pop",
+          "rock",
+          "jazz_brushes",
+          "big_room_cinematic"
+        ],
+        "kickWeight": { "type": "slider", "min": 0, "max": 100 },
+        "snareSnap": { "type": "slider", "min": 0, "max": 100 },
+        "cymbalWash": { "type": "slider", "min": 0, "max": 100 }
+      },
+      {
+        "id": "acoustic_guitar_steel",
+        "category": "guitar",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "role": [
+          "rhythm_bed",
+          "arpeggios",
+          "percussive_strums",
+          "counter_melody"
+        ],
+        "strumComplexity": { "type": "slider", "min": 0, "max": 100 },
+        "tone": ["bright", "warm", "dark", "sparkly"],
+        "effects": {
+          "reverb": { "type": "knob", "min": 0, "max": 100 },
+          "delay": { "type": "knob", "min": 0, "max": 100 },
+          "chorus": { "type": "knob", "min": 0, "max": 100 }
+        }
+      },
+      {
+        "id": "electric_guitar_lead",
+        "category": "guitar",
+        "enabled": false,
+        "intensity": { "type": "knob", "min": 0, "max": 100 },
+        "role": ["melodic_lead", "riffs", "ambient_textures"],
+        "gain": { "type": "knob", "min": 0, "max": 100 },
+        "articulationDetail": {
+          "type": "slider",
+          "min": 0,
+          "max": 100,
+          "label": "Bends / slides / legato"
+        },
+        "effects": {
+          "overdrive": { "type": "knob", "min": 0, "max": 100 },
+          "distortion": { "type": "knob", "min": 0, "max": 100 },
+          "delay": { "type": "knob", "min": 0, "max": 100 },
+          "reverb": { "type": "knob", "min": 0, "max": 100 }
+        }
+      }
+      /* extend for pads, synths, strings, flute, violin, basses, etc. */
+    ]
+  },
+
+  "vocals": {
+    "level": { "type": "knob", "min": 0, "max": 100, "default": 70 },
+    "density": {
+      "type": "slider",
+      "min": 0,
+      "max": 100,
+      "label": "Number of vocal layers / harmonies"
+    },
+    "lineComplexity": {
+      "type": "slider",
+      "min": 0,
+      "max": 100,
+      "label": "Melodic & rhythmic complexity"
+    },
+    "rhythmicTightness": { "type": "slider", "min": 0, "max": 100 },
+    "language": {
+      "primary": ["tamil", "english", "hindi", "instrumental_only"],
+      "codeSwitching": {
+        "type": "slider",
+        "min": 0,
+        "max": 100,
+        "label": "Tamil ↔ English mix"
+      }
+    },
+    "role": [
+      "lead_only",
+      "lead_plus_harmonies",
+      "hook_chant",
+      "choir_pads",
+      "humming_only"
+    ],
+    "genderTimbre": {
+      "genderBlend": {
+        "type": "knob",
+        "min": 0,
+        "max": 100,
+        "label": "Male ↔ Female blend"
+      },
+      "toneSliders": {
+        "airy": { "type": "slider", "min": 0, "max": 100 },
+        "nasal": { "type": "slider", "min": 0, "max": 100 },
+        "chesty": { "type": "slider", "min": 0, "max": 100 },
+        "breathy": { "type": "slider", "min": 0, "max": 100 },
+        "raspy": { "type": "slider", "min": 0, "max": 100 },
+        "brightness": { "type": "slider", "min": 0, "max": 100 }
+      }
+    },
+    "style": [
+      "carnatic_classical",
+      "light_classical",
+      "tamil_folk",
+      "gaana",
+      "tamil_film_ballad",
+      "tamil_film_mass",
+      "pop",
+      "rock",
+      "devotional"
+    ],
+    "phrasing": {
+      "legato_vs_staccato": { "type": "slider", "min": 0, "max": 100 },
+      "syncopation": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "performance": {
+      "vibratoDepth": { "type": "knob", "min": 0, "max": 100 },
+      "ornamentationLevel": { "type": "knob", "min": 0, "max": 100 },
+      "pitchSlides": { "type": "slider", "min": 0, "max": 100 },
+      "reverbAmount": { "type": "knob", "min": 0, "max": 100 },
+      "delayAmount": { "type": "knob", "min": 0, "max": 100 }
+    },
+    "conditionalGuards": {
+      "ifStyleIncludes": ["carnatic_classical"],
+      "thenMinOrnamentationLevel": 40,
+      "thenMinPitchSlides": 30
+    }
+  },
+
+  "ornamentation": {
+    "hums": {
+      "enabled": false,
+      "position": "enum: [intro, background, outro, throughout]"
+    },
+    "nonLyricalTextures": {
+      "ooh_aah_pads": false,
+      "crowd_chants": false,
+      "claps": false
+    },
+    "carnatic": {
+      "alapana": {
+        "enabled": false,
+        "placement": "enum: [intro, interlude, outro]",
+        "complexity": { "type": "slider", "min": 0, "max": 100 }
+      },
+      "gamakamIntensity": { "type": "slider", "min": 0, "max": 100 },
+      "ragaFlavor": "enum: [kalyani_like, bhairavi_like, kapi_like, hindolam_like, other]",
+      "tanBrigaDensity": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "folk": {
+      "tamilFolkFeel": { "type": "slider", "min": 0, "max": 100 },
+      "gaanaStyle": { "type": "slider", "min": 0, "max": 100 },
+      "festivalEnergy": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "routing": {
+      "appliesToLeadVocal": true,
+      "appliesToSoloInstrument": false,
+      "appliesToBackgroundOnly": false
+    }
+  },
+
+  "structure": {
+    "form": "enum: [intro_verse_chorus_bridge_outro, ab, aaba, loop_based, build_and_drop]",
+    "energyCurve": {
+      "start": { "type": "slider", "min": 0, "max": 100 },
+      "peak": { "type": "slider", "min": 0, "max": 100 },
+      "end": { "type": "slider", "min": 0, "max": 100 },
+      "buildRate": { "type": "slider", "min": 0, "max": 100 }
+    },
+    "sectionHints": {
+      "intro": "string",
+      "verses": "string",
+      "chorus": "string",
+      "bridge": "string",
+      "outro": "string"
+    }
+  },
+
+  "mix": {
+    "mixAdjectives": [
+      "clean",
+      "lush",
+      "cinematic",
+      "raw",
+      "lofi",
+      "vintage",
+      "modern_pop",
+      "club_ready",
+      "ambient",
+      "soothing",
+      "nostalgic"
+    ],
+    "space": "enum: [dry, room, hall, plate, wide_ambient]",
+    "focus": "enum: [vocal_forward, band_forward, balanced]"
+  },
+
+  "platformAdapters": {
+    "suno": {
+      "stylePromptLimitHint": 200,
+      "useMetaTags": true,
+      "pattern": "genre + tempo + mood + instrumentation + vocal + mix",
+      "forbidSectionTags": true
+    },
+    "heartmula": {
+      "stylePromptFormat": "short_text_tags",
+      "supportsLongForm": true,
+      "sectionStyleHints": true
+    },
+    "generic": {
+      "stylePromptFormat": "freeform_compact"
+    }
+  },
+
+  "multiAgentPipeline": {
+    "agents": [
+      {
+        "id": "schema_agent",
+        "role": "Normalize and validate config from UI or analysis layer.",
+        "input": ["ui_state", "analysis_summary"],
+        "output": ["normalized_schema"]
+      },
+      {
+        "id": "style_composer_agent",
+        "role": "Turn normalized schema into layered abstract description.",
+        "input": ["normalized_schema"],
+        "output": ["abstract_style_description"]
+      },
+      {
+        "id": "platform_adapter_agent",
+        "role": "Render abstract description for chosen platform.",
+        "input": ["abstract_style_description", "targetPlatform"],
+        "output": ["raw_platform_prompt"]
+      },
+      {
+        "id": "length_controller_agent",
+        "role": "Compress or expand prompt according to length slider under hard cap.",
+        "input": ["raw_platform_prompt", "promptLengthControl"],
+        "output": ["length_adjusted_prompt"]
+      },
+      {
+        "id": "quality_constraints_agent",
+        "role": "Final cleaning, de-dup adjectives, enforce 600 char hard limit, safety.",
+        "input": ["length_adjusted_prompt"],
+        "output": ["final_prompt"]
+      },
+      {
+        "id": "testing_diagnostics_agent",
+        "role": "Generate test cases, log decisions, help regression testing.",
+        "input": ["pipeline_state"],
+        "output": ["diagnostic_report"]
+      }
+    ],
+    "orchestration": {
+      "sharedState": "object",
+      "executionFlow": [
+        "schema_agent",
+        "style_composer_agent",
+        "platform_adapter_agent",
+        "length_controller_agent",
+        "quality_constraints_agent"
+      ],
+      "llmRouting": {
+        "schema_agent": "mistral",
+        "style_composer_agent": "gpt",
+        "platform_adapter_agent": "gpt",
+        "length_controller_agent": "gemini",
+        "quality_constraints_agent": "opus"
+      }
+    }
+  },
+
+  "coherenceRules": {
+    "maxSimultaneousLeads": 2,
+    "rules": [
+      {
+        "id": "limit_high_density_all",
+        "if": {
+          "overall_density": { "greaterThan": 80 },
+          "clarity_vs_complexity": { "lessThan": 30 }
+        },
+        "then": [
+          { "setMax": ["vocals.density", 60] },
+          { "setMax": ["instrumentation.instruments[*].intensity", 80] },
+          { "forceDisable": ["ornamentation.hums.enabled"], "weight": 0.5 }
+        ]
+      },
+      {
+        "id": "prevent_vocal_guitar_clash",
+        "if": {
+          "vocals.level": { "greaterThan": 70 },
+          "instrumentation.electric_guitar_lead.intensity": { "greaterThan": 70 }
+        },
+        "then": [
+          { "reduce": ["instrumentation.electric_guitar_lead.intensity", 20] },
+          { "orReduce": ["vocals.level", 10] }
+        ]
+      },
+      {
+        "id": "limit_ornamentation_with_fast_tempo",
+        "if": {
+          "globalConfig.tempo.feel": "fast",
+          "vocals.lineComplexity": { "greaterThan": 70 }
+        },
+        "then": [
+          { "setMax": ["ornamentation.carnatic.tanBrigaDensity", 60] },
+          { "setMax": ["ornamentation.carnatic.alapana.complexity", 50] }
+        ]
+      }
+    ]
+  },
+
+  "presets": [
+    {
+      "id": "tamil_film_ballad_80s",
+      "label": "Tamil film ballad – 80s",
+      "tags": ["tamil_film", "80s", "romantic", "strings"],
+      "globalConfig": {
+        "genre": ["tamil_film"],
+        "tempo": { "feel": "slow" },
+        "moodAxes": {
+          "calm_to_energetic": 40,
+          "dark_to_bright": 60,
+          "intimate_to_epic": 65,
+          "devotional_to_romantic": 70
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "veena": { "enabled": true, "intensity": 40, "style": "film_melodic" },
+          "violin_section": { "enabled": true, "intensity": 80, "style": "legato_strings" },
+          "mridangam": { "enabled": false },
+          "tabla": { "enabled": false },
+          "drumkit_acoustic": { "enabled": true, "intensity": 30, "style": "soft_brushes" },
+          "bass_guitar": { "enabled": true, "intensity": 50, "style": "warm_sustained" },
+          "pad_soft": { "enabled": true, "intensity": 40, "style": "analog_warm" }
+        }
+      },
+      "vocals": {
+        "level": 80,
+        "density": 40,
+        "lineComplexity": 45,
+        "rhythmicTightness": 60,
+        "language": { "primary": "tamil", "codeSwitching": 0 },
+        "role": ["lead_plus_harmonies"],
+        "style": ["tamil_film_ballad"],
+        "genderTimbre": {
+          "genderBlend": 40,
+          "toneSliders": { "airy": 30, "chesty": 60, "brightness": 50 }
+        },
+        "performance": {
+          "vibratoDepth": 40,
+          "ornamentationLevel": 35,
+          "pitchSlides": 35,
+          "reverbAmount": 60,
+          "delayAmount": 20
+        }
+      },
+      "ornamentation": {
+        "carnatic": { "alapana": { "enabled": false }, "gamakamIntensity": 20 },
+        "folk": { "tamilFolkFeel": 0 }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 30, "peak": 70, "end": 40, "buildRate": 50 }
+      },
+      "mix": {
+        "mixAdjectives": ["lush", "cinematic", "vintage"],
+        "space": "hall",
+        "focus": "vocal_forward"
+      },
+      "microPromptPreview": "80s-style Tamil film ballad, slow and romantic, lush strings, soft acoustic drums and warm bass, emotional Tamil lead vocals with gentle harmonies and hall reverb.",
+      "coherenceColor": "dynamic"
+    },
+    {
+      "id": "tamil_mass_song_2010s",
+      "label": "Tamil mass song – 2010s",
+      "tags": ["tamil_film", "mass", "high_energy", "electronic"],
+      "globalConfig": {
+        "genre": ["tamil_film", "indian_fusion"],
+        "tempo": { "feel": "fast" },
+        "moodAxes": {
+          "calm_to_energetic": 90,
+          "dark_to_bright": 70,
+          "intimate_to_epic": 80,
+          "devotional_to_romantic": 40
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "drumkit_acoustic": { "enabled": true, "intensity": 85, "style": "rock" },
+          "edm_drums": { "enabled": true, "intensity": 80, "style": "festival" },
+          "parai": { "enabled": true, "intensity": 75, "style": "festival_peak" },
+          "synth_bass": { "enabled": true, "intensity": 85, "style": "aggressive" },
+          "electric_guitar_lead": { "enabled": true, "intensity": 70, "gain": 70 },
+          "brass_synth": { "enabled": true, "intensity": 60 },
+          "pad_hype": { "enabled": true, "intensity": 50 }
+        },
+        "percussionGlobal": {
+          "kitPreset": "edm_plus_indian",
+          "grooveFeel": "straight",
+          "densityMain": 85,
+          "fillsFrequency": 70,
+          "layering": "dense"
+        }
+      },
+      "vocals": {
+        "level": 85,
+        "density": 70,
+        "lineComplexity": 55,
+        "rhythmicTightness": 80,
+        "language": { "primary": "tamil", "codeSwitching": 30 },
+        "role": ["lead_plus_harmonies", "hook_chant"],
+        "style": ["tamil_film_mass", "gaana"],
+        "genderTimbre": {
+          "genderBlend": 60,
+          "toneSliders": { "chesty": 70, "raspy": 40, "brightness": 65 }
+        },
+        "performance": {
+          "vibratoDepth": 20,
+          "ornamentationLevel": 30,
+          "pitchSlides": 30,
+          "reverbAmount": 50,
+          "delayAmount": 40
+        }
+      },
+      "ornamentation": {
+        "hums": { "enabled": false },
+        "folk": { "tamilFolkFeel": 70, "gaanaStyle": 80, "festivalEnergy": 90 },
+        "carnatic": { "gamakamIntensity": 20 }
+      },
+      "structure": {
+        "form": "build_and_drop",
+        "energyCurve": { "start": 60, "peak": 95, "end": 70, "buildRate": 80 }
+      },
+      "mix": {
+        "mixAdjectives": ["modern_pop", "club_ready", "punchy"],
+        "space": "wide_ambient",
+        "focus": "balanced"
+      },
+      "microPromptPreview": "High-energy Tamil mass track with EDM drums, parai, aggressive synth bass and rock guitars, crowd-chant hooks and gaana-influenced Tamil vocals in a festival-style mix.",
+      "coherenceColor": "dynamic"
+    },
+    {
+      "id": "carnatic_kriti_traditional",
+      "label": "Carnatic kriti – traditional",
+      "tags": ["carnatic_classical", "devotional", "acoustic"],
+      "globalConfig": {
+        "genre": ["carnatic_classical"],
+        "tempo": { "feel": "medium" },
+        "moodAxes": {
+          "calm_to_energetic": 55,
+          "dark_to_bright": 60,
+          "intimate_to_epic": 50,
+          "devotional_to_romantic": 90
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "vocal_drone_tanpura": { "enabled": true, "intensity": 80 },
+          "violin_solo": { "enabled": true, "intensity": 60, "style": "gAyaki_style" },
+          "mridangam": { "enabled": true, "intensity": 70, "style": "tight_classical", "tala": "adi" },
+          "ghatam": { "enabled": true, "intensity": 40 },
+          "kanjira": { "enabled": true, "intensity": 35 }
+        },
+        "percussionGlobal": {
+          "kitPreset": "mridangam_focus",
+          "grooveFeel": "complex_tala",
+          "densityMain": 60,
+          "fillsFrequency": 50,
+          "layering": "moderate"
+        }
+      },
+      "vocals": {
+        "level": 85,
+        "density": 60,
+        "lineComplexity": 75,
+        "rhythmicTightness": 75,
+        "language": { "primary": "tamil", "codeSwitching": 0 },
+        "role": ["lead_only"],
+        "style": ["carnatic_classical", "devotional"],
+        "genderTimbre": {
+          "genderBlend": 50,
+          "toneSliders": { "brightness": 60, "chesty": 50 }
+        },
+        "performance": {
+          "vibratoDepth": 15,
+          "ornamentationLevel": 80,
+          "pitchSlides": 80,
+          "reverbAmount": 35,
+          "delayAmount": 0
+        }
+      },
+      "ornamentation": {
+        "carnatic": {
+          "alapana": { "enabled": true, "placement": "intro", "complexity": 70 },
+          "gamakamIntensity": 85,
+          "ragaFlavor": "kalyani_like",
+          "tanBrigaDensity": 70
+        },
+        "folk": { "tamilFolkFeel": 0 }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 50, "peak": 75, "end": 50, "buildRate": 55 }
+      },
+      "mix": {
+        "mixAdjectives": ["clean", "intimate", "acoustic"],
+        "space": "room",
+        "focus": "vocal_forward"
+      },
+      "microPromptPreview": "Traditional Carnatic kriti with tanpura drone, violin accompaniment and mridangam, devotional Tamil vocal in gAyaki style with rich gamakam and raga-based alapana intro.",
+      "coherenceColor": "dynamic"
+    },
+    {
+      "id": "carnatic_fusion_ambient",
+      "label": "Carnatic fusion – ambient",
+      "tags": ["carnatic_classical", "ambient", "fusion"],
+      "globalConfig": {
+        "genre": ["carnatic_classical", "ambient", "indian_fusion"],
+        "tempo": { "feel": "slow" },
+        "moodAxes": {
+          "calm_to_energetic": 30,
+          "dark_to_bright": 55,
+          "intimate_to_epic": 70,
+          "devotional_to_romantic": 80
+        },
+        "useCase": "background_score"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "veena": { "enabled": true, "intensity": 55, "style": "solo_improv" },
+          "pad_soft": { "enabled": true, "intensity": 70, "style": "shimmering" },
+          "ambient_guitars": { "enabled": true, "intensity": 50 },
+          "mridangam": { "enabled": true, "intensity": 40, "style": "light_folk_flavor" },
+          "soft_perc_textures": { "enabled": true, "intensity": 30 }
+        }
+      },
+      "vocals": {
+        "level": 50,
+        "density": 20,
+        "lineComplexity": 50,
+        "rhythmicTightness": 50,
+        "language": { "primary": "tamil", "codeSwitching": 0 },
+        "role": ["humming_only", "choir_pads"],
+        "style": ["light_classical", "devotional"],
+        "performance": {
+          "vibratoDepth": 25,
+          "ornamentationLevel": 45,
+          "pitchSlides": 45,
+          "reverbAmount": 80,
+          "delayAmount": 40
+        }
+      },
+      "ornamentation": {
+        "hums": { "enabled": true, "position": "background" },
+        "carnatic": {
+          "alapana": { "enabled": true, "placement": "intro", "complexity": 40 },
+          "gamakamIntensity": 60,
+          "ragaFlavor": "hindolam_like"
+        }
+      },
+      "structure": {
+        "form": "loop_based",
+        "energyCurve": { "start": 30, "peak": 55, "end": 35, "buildRate": 30 }
+      },
+      "mix": {
+        "mixAdjectives": ["ambient", "lush", "cinematic"],
+        "space": "wide_ambient",
+        "focus": "balanced"
+      },
+      "microPromptPreview": "Ambient Carnatic fusion bed with veena improvisations, shimmering pads, soft mridangam and humming Tamil vocals, spacious devotional atmosphere inspired by raga colors.",
+      "coherenceColor": "dynamic"
+    },
+    {
+      "id": "tamil_folk_parai_dance",
+      "label": "Tamil folk parai dance",
+      "tags": ["tamil_folk", "dance", "parai"],
+      "globalConfig": {
+        "genre": ["tamil_folk"],
+        "tempo": { "feel": "fast" },
+        "moodAxes": {
+          "calm_to_energetic": 95,
+          "dark_to_bright": 70,
+          "intimate_to_epic": 75,
+          "devotional_to_romantic": 40
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "parai": { "enabled": true, "intensity": 90, "style": "festival_peak" },
+          "nadaswaram": { "enabled": true, "intensity": 75, "style": "folk_lead" },
+          "tavil": { "enabled": true, "intensity": 80 },
+          "claps": { "enabled": true, "intensity": 60 },
+          "bass_folk": { "enabled": true, "intensity": 50 }
+        },
+        "percussionGlobal": {
+          "kitPreset": "parai_ensemble",
+          "grooveFeel": "straight",
+          "densityMain": 90,
+          "fillsFrequency": 80,
+          "layering": "dense"
+        }
+      },
+      "vocals": {
+        "level": 80,
+        "density": 65,
+        "lineComplexity": 55,
+        "rhythmicTightness": 85,
+        "language": { "primary": "tamil", "codeSwitching": 0 },
+        "role": ["lead_plus_harmonies", "hook_chant"],
+        "style": ["tamil_folk", "gaana"],
+        "performance": {
+          "vibratoDepth": 10,
+          "ornamentationLevel": 35,
+          "pitchSlides": 35,
+          "reverbAmount": 35,
+          "delayAmount": 25
+        }
+      },
+      "ornamentation": {
+        "folk": {
+          "tamilFolkFeel": 95,
+          "gaanaStyle": 75,
+          "festivalEnergy": 95
+        },
+        "hums": { "enabled": false }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 70, "peak": 100, "end": 80, "buildRate": 90 }
+      },
+      "mix": {
+        "mixAdjectives": ["raw", "lively", "crowd_energy"],
+        "space": "room",
+        "focus": "band_forward"
+      },
+      "microPromptPreview": "Fast Tamil folk dance with powerful parai ensemble, nadaswaram and tavil, earthy village-style Tamil vocals and shout-style hooks in a raw, lively festival atmosphere.",
+      "coherenceColor": "dynamic"
+    },
+    {
+      "id": "tamil_devotional_soft",
+      "label": "Tamil devotional – soft",
+      "tags": ["devotional", "soft", "temple"],
+      "globalConfig": {
+        "genre": ["tamil_film", "devotional", "carnatic_classical"],
+        "tempo": { "feel": "slow" },
+        "moodAxes": {
+          "calm_to_energetic": 35,
+          "dark_to_bright": 65,
+          "intimate_to_epic": 60,
+          "devotional_to_romantic": 95
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "veena": { "enabled": true, "intensity": 50, "style": "film_melodic" },
+          "harmonium": { "enabled": true, "intensity": 45 },
+          "mridangam": { "enabled": true, "intensity": 40, "style": "tight_classical" },
+          "soft_flute": { "enabled": true, "intensity": 55 },
+          "temple_bells": { "enabled": true, "intensity": 35 }
+        }
+      },
+      "vocals": {
+        "level": 80,
+        "density": 40,
+        "lineComplexity": 55,
+        "rhythmicTightness": 60,
+        "language": { "primary": "tamil", "codeSwitching": 10 },
+        "role": ["lead_plus_harmonies"],
+        "style": ["devotional", "light_classical"],
+        "performance": {
+          "vibratoDepth": 25,
+          "ornamentationLevel": 55,
+          "pitchSlides": 55,
+          "reverbAmount": 55,
+          "delayAmount": 20
+        }
+      },
+      "ornamentation": {
+        "carnatic": {
+          "alapana": { "enabled": true, "placement": "intro", "complexity": 40 },
+          "gamakamIntensity": 60,
+          "ragaFlavor": "bhairavi_like"
+        },
+        "hums": { "enabled": true, "position": "intro" }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 40, "peak": 70, "end": 45, "buildRate": 45 }
+      },
+      "mix": {
+        "mixAdjectives": ["soothing", "warm", "spiritual"],
+        "space": "hall",
+        "focus": "vocal_forward"
+      },
+      "microPromptPreview": "Soft Tamil devotional song with veena, harmonium, mridangam and temple bells, gentle Tamil devotional vocals with light gamakam and a warm spiritual hall ambience.",
+      "coherenceColor": "dynamic"
+    },
+    {
+      "id": "indian_fusion_guitar_rock",
+      "label": "Indian fusion – guitar rock",
+      "tags": ["indian_fusion", "rock", "guitar"],
+      "globalConfig": {
+        "genre": ["indian_fusion", "rock"],
+        "tempo": { "feel": "medium" },
+        "moodAxes": {
+          "calm_to_energetic": 70,
+          "dark_to_bright": 60,
+          "intimate_to_epic": 75,
+          "devotional_to_romantic": 50
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "electric_guitar_lead": { "enabled": true, "intensity": 80, "gain": 75 },
+          "electric_guitar_rhythm": { "enabled": true, "intensity": 70 },
+          "bass_guitar": { "enabled": true, "intensity": 70 },
+          "drumkit_acoustic": { "enabled": true, "intensity": 80, "style": "rock" },
+          "tabla": { "enabled": true, "intensity": 40, "style": "fusion_with_drumkit" },
+          "synth_pads": { "enabled": true, "intensity": 40 }
+        }
+      },
+      "vocals": {
+        "level": 80,
+        "density": 55,
+        "lineComplexity": 60,
+        "rhythmicTightness": 75,
+        "language": { "primary": "tamil", "codeSwitching": 40 },
+        "role": ["lead_plus_harmonies"],
+        "style": ["tamil_film", "rock"],
+        "performance": {
+          "vibratoDepth": 35,
+          "ornamentationLevel": 40,
+          "pitchSlides": 40,
+          "reverbAmount": 50,
+          "delayAmount": 35
+        }
+      },
+      "ornamentation": {
+        "carnatic": { "gamakamIntensity": 35, "ragaFlavor": "kapi_like" },
+        "folk": { "tamilFolkFeel": 20 }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 50, "peak": 85, "end": 60, "buildRate": 65 }
+      },
+      "mix": {
+        "mixAdjectives": ["punchy", "modern_pop", "guitar_forward"],
+        "space": "room",
+        "focus": "band_forward"
+      },
+      "microPromptPreview": "Indian fusion rock track with driving drums, electric guitars and tabla layers, Tamil-rock vocals with light raga flavor and a punchy, guitar-forward modern mix.",
+      "coherenceColor": "dynamic"
+    },
+    {
+      "id": "90s_tamil_pop_duet",
+      "label": "90s Tamil pop duet",
+      "tags": ["tamil_film", "90s", "duet"],
+      "globalConfig": {
+        "genre": ["tamil_film", "pop"],
+        "tempo": { "feel": "medium" },
+        "moodAxes": {
+          "calm_to_energetic": 60,
+          "dark_to_bright": 65,
+          "intimate_to_epic": 70,
+          "devotional_to_romantic": 65
+        },
+        "useCase": "full_song"
+      },
+      "instrumentation": {
+        "instrumentsState": {
+          "drum_machine_90s": { "enabled": true, "intensity": 60 },
+          "bass_synth_round": { "enabled": true, "intensity": 55 },
+          "acoustic_guitar_steel": { "enabled": true, "intensity": 50 },
+          "flute": { "enabled": true, "intensity": 45 },
+          "strings_ensemble": { "enabled": true, "intensity": 65 },
+          "bells_mallets": { "enabled": true, "intensity": 35 }
+        }
+      },
+      "vocals": {
+        "level": 85,
+        "density": 60,
+        "lineComplexity": 55,
+        "rhythmicTightness": 70,
+        "language": { "primary": "tamil", "codeSwitching": 10 },
+        "role": ["lead_plus_harmonies"],
+        "style": ["tamil_film_ballad"],
+        "genderTimbre": {
+          "genderBlend": 50,
+          "toneSliders": { "brightness": 65, "airy": 40, "chesty": 55 }
+        },
+        "performance": {
+          "vibratoDepth": 35,
+          "ornamentationLevel": 40,
+          "pitchSlides": 35,
+          "reverbAmount": 55,
+          "delayAmount": 25
+        }
+      },
+      "ornamentation": {
+        "carnatic": { "gamakamIntensity": 30 },
+        "hums": { "enabled": true, "position": "outro" }
+      },
+      "structure": {
+        "form": "intro_verse_chorus_bridge_outro",
+        "energyCurve": { "start": 45, "peak": 75, "end": 50, "buildRate": 55 }
+      },
+      "mix": {
+        "mixAdjectives": ["nostalgic", "warm", "melodic"],
+        "space": "hall",
+        "focus": "vocal_forward"
+      },
+      "microPromptPreview": "90s-style Tamil pop duet with drum-machine groove, soft synth bass, acoustic guitar and flute, warm nostalgic Tamil vocals and lush string pads.",
+      "coherenceColor": "dynamic"
+    }
+  ],
+
+  "output": {
+    "finalPrompt": {
+      "type": "string",
+      "maxLength": 600
+    },
+    "characterCount": {
+      "type": "integer"
+    },
+    "modelAttribution": {
+      "chosenAnalyzerModel": "enum: [gpt, opus, gemini, mistral, ollama_local, ensemble]",
+      "confidenceNotes": "string"
+    }
+  }
+}
+
+
+
+
+Here are ideas that can push this app into “best in class” territory, plus how to implement them.
+
+***
+
+## 1. Two-level prompts: producer view vs. platform view
+
+- Maintain an internal **rich narrative** (no length limit) and a separate **compressed platform prompt** (<= 600 chars, slider‑controlled).[1][2][3]
+- Let users toggle a “Producer view” text area that shows the full internal description (like liner notes), while the Suno/HeartMuLa prompt stays optimized for their limits.  
+- Implementation: style_composer_agent writes the long narrative; platform_adapter + length_controller compress it.
+
+***
+
+## 2. “Prompt debugger” and delta view
+
+- After each slider move, show:  
+  - Current final prompt.  
+  - A small “What changed” line (“Increased percussion density, reduced vocal reverb”).[4][5]
+- Add a history strip (last 5 prompts) so users can A/B compare versions.  
+- Implementation: keep previous normalized_schema + prompt, diff them, highlight changed semantic fields.
+
+***
+
+## 3. Smart keyword palette and tags
+
+- Auto-generate a **keyword palette** from your config: timbres, moods, ornaments, production styles, Tamil/Carnatic adjectives.[2][6][7]
+- Show them as chips under each section; clicking a chip nudges relevant sliders and injects or removes words in the prompt.  
+- Example chips: “shimmering pads”, “earthy folk groove”, “tight mridangam”, “temple ambience”.
+
+***
+
+## 4. Multi‑model “jury” with scores
+
+- When you run GPT / Gemini / Mistral analysis on a link or lyrics, also ask them: “On 0–100, how well does this config match the reference track?”[8][9]
+- Show:  
+  - Individual scores per model.  
+  - An average “Similarity” meter.  
+- Let users click one model’s interpretation to re‑seed sliders.
+
+***
+
+## 5. Adaptive presets and learning
+
+- Track which presets and tweaks users actually keep, and which get discarded.[9][4]
+- Over time, build “personal presets” that bias towards the user’s favorite:  
+  - instruments (e.g., always veena + ambient pads),  
+  - moods (devotional/romantic),  
+  - mix styles (cinematic, vocal‑forward).  
+- Implementation: store anonymized config samples + rating (like/dislike) and let a small “preset_recommender_agent” suggest starting points.
+
+***
+
+## 6. Genre/decade “guardrails”
+
+- Add **genre‑aware constraints** so prompts stay interpretable for models (no exotic labels that confuse them).[10][11][2]
+- For each main genre/decade, maintain a whitelist of safe style words; red‑flag rare or ambiguous adjectives (e.g., “neon‑cosmic‑sadness”) unless user explicitly overrides.  
+- Implementation: a small vocabulary map per genre with weights, used by quality_constraints_agent.
+
+***
+
+## 7. Texture and space layer
+
+- Add a dedicated **Texture & Space** section: vinyl noise, temple ambience, rain, lo‑fi hiss, crowd murmur, etc.[3][5]
+- One knob could be “Real‑world ambience” (0: studio‑clean, 100: field‑recorded/temple/street).  
+- These map to compact phrases like “subtle vinyl hiss and tape warmth” or “temple ambience with distant bells”.
+
+***
+
+## 8. Iterative listening loop
+
+- Build a mini workflow UI:  
+  1) Choose or generate prompt → 2) Open Suno/HeartMuLa in a side panel (or link) → 3) After listening, user rates aspects (mood accuracy, instrument balance, vocal style).[1][2][4]
+- Feed these ratings back to adjust mapping curves (e.g., how much text you dedicate to percussion vs. vocals for mass songs).
+
+***
+
+## 9. “Exploration vs. precision” mode
+
+- Add a global toggle:  
+  - **Exploration**: allow looser prompts, more poetic wording, slightly less constraint; good for discovering new vibes.  
+  - **Precision**: stricter adherence to sliders, more literal, fewer adjectives and no ambiguous metaphors.[10][1]
+- Implementation: quality_constraints_agent switches templates and adjective filters by mode.
+
+***
+
+## 10. Multi‑modal future‑proofing
+
+- Reserve schema fields for future audio inputs: short hummed melody, rhythm tap, or tala clap pattern.[3][4]
+- Even before you add audio processing, you can let LLMs *describe* the reference song’s rhythm/melody given a link, and route that into fields like “motif_intensity” or “loopability”.
+
+***
+
+## 11. UX details that matter
+
+- Contextual help: hovering on “gamakamIntensity” shows 2–3 Tamil examples in plain language, not theory jargon.[12][13]
+- “Use‑case prompts” row: one‑click templates like “Insta reel BGM”, “Hero entry”, “Temple scene”, each just a thin layer over your deeper schema.[13]
+- Keyboard shortcuts or MIDI‑style knob support for power users.
+
+***
+
+## 12. Orchestration stack choices
+
+- Use a graph‑based agent framework (LangGraph / CrewAI‑style) so you can visualize how agents pass state and debug bottlenecks.[14][15][9]
+- Add a feedback loop where the testing_diagnostics_agent periodically runs “stress suites” (random configs + simulated ratings) to ensure prompts stay under 600 chars and coherent over time.
+
+***
+
+If you tell me your likely tech stack (e.g., React + Node + LangGraph/CrewAI), I can outline a concrete architecture: which parts live on client vs. server, and how to store and reuse user‑specific “taste profiles” for Tamil and Carnatic styles.
+
+Sources
+[1] How to Write a Prompt for AI Music | Advanced Guide https://www.imagine.art/blogs/how-to-write-prompt-for-AI-Music
+[2] How to Write Better AI Music Prompts - OpenMusic AI https://www.openmusic.ai/docs/how-to/write-effective-prompts
+[3] 5 Key Elements of an Effective AI Music Prompt - SendFame https://sendfame.com/blog/ai-music-prompt
+[4] [PDF] AI-Assisted Music Production: A User Study on Text-to-Music Models https://www.arxiv.org/pdf/2509.23364.pdf
+[5] What prompts work best for getting unique sounds from ai music tools? https://www.facebook.com/groups/2703779406444247/posts/3138269126328604/
+[6] UX Roundup: Prompting for Music Styles | Combining AI Tools https://jakobnielsenphd.substack.com/p/ux-roundup-20240520
+[7] Adjectives For Carnatic music - Describing Words https://describingwords.io/for/carnatic%20music
+[8] Multi Agent Orchestration - Kore.ai https://www.kore.ai/ai-agent-platform/multi-agent-orchestration
+[9] Best Multi-Agent Orchestration Platforms for Enterprise AI Workflows https://www.techaheadcorp.com/blog/multi-agent-orchestration-for-enterprise-ai-workflows/
+[10] Expanded Insight and Guidance on Suno Style Prompt Writing from ... https://www.reddit.com/r/SunoAI/comments/1h4zc7e/expanded_insight_and_guidance_on_suno_style/
+[11] How to structure prompts for Suno AI https://howtopromptsuno.com/making-music
+[12] What I've learned about UX design from an AI music project https://uxplanet.org/what-ive-learned-about-ux-design-from-an-ai-music-project-eedec3260c20
+[13] Designing Use-Case Prompt Suggestions - NN/G https://www.nngroup.com/articles/designing-use-case-prompt-suggestions/
+[14] Multi-agent orchestration is the future of AI coding. Here are ... - Reddit https://www.reddit.com/r/ClaudeAI/comments/1pgmiox/multiagent_orchestration_is_the_future_of_ai/
+[15] The Leading Multi-Agent Platform https://www.crewai.com
+[16] The BEST Prompting Guide for AI Music Video Creation in 2025 https://invideo.io/blog/ai-music-video-prompting-guide/
+[17] UX Roundup: Creativity for Old Users | Conflicting AI Goals - UX Tigers https://www.uxtigers.com/post/ux-roundup-20251124
+
+
+
+
+Here is a concise plan covering all three: “out of the world” ideas, concrete improvements, and a concrete architecture for a likely stack (React + Node + multi‑agent backend).[1][2][3][4][5]
+
+***
+
+## 1. Out‑of‑the‑world features
+
+- Generative “reference hallucination”: from just 3–5 words (“temple rain night”), an LLM agent builds a **virtual reference brief** (imaginary song description), then the normal pipeline turns that into a prompt. This lets users ideate without any real track or lyrics.[3][1]
+- Raga‑flavored “orbit control”: one circular knob where angle = raga flavor family (bright majorish vs serious, meditative, folkish), radius = intensity; the app auto‑chooses ragaFlavor, gamakamIntensity, and vocal ornamentation together.  
+- “Emotion morph” slider: A/B presets (e.g., Devotional ↔ Romantic), then a morph slider that linearly interpolates all relevant sliders/knobs, re‑rendering prompts live.  
+- “Narrative arc designer”: a tiny timeline where you sketch emotional labels per section (intro calm → verse hopeful → chorus ecstatic → outro peaceful). The schema agent turns that into energyCurve + sectionHints + moodAxes mapping.[4]
+- Tamil lyric‑aware constraints: if lyrics text contains specific rasas/keywords (bhakti, viraham, village slang etc.), an LLM agent tags them and locks some fields or suggests presets (e.g., “parai_folk_dance” or “soft_devotional”).  
+
+***
+
+## 2. How to improve quality and become best‑in‑field
+
+### 2.1 Prompt quality engine
+
+- Use a **Prompt Quality Score** (0–100) combining:  
+  - clarity (no contradictions),  
+  - density (info/char),  
+  - platform alignment (Suno or HeartMuLa best practices),  
+  - musical coherence (via rule engine).[2][6][7]
+- Show this score next to the output; let users click “Improve” to trigger one extra refinement pass (without exceeding 600 chars).
+
+### 2.2 Platform‑specific optimization profiles
+
+- Maintain small “playbooks” per platform (Suno, HeartMuLa, others) describing:  
+  - preferred structure (what to mention first),  
+  - words that confuse or get ignored,  
+  - effective length band (e.g., 120–200 chars often works best for style prompts).[8][9][1]
+- Platform_adapter_agent picks a playbook and rewrites within your schema, not free‑text.
+
+### 2.3 User‑adaptive Tamil/Carnatic depth
+
+- Add a “Theory depth” toggle: Basic / Intermediate / Nerdy.  
+- At higher levels, allow references like “varnam‑like opening”, “neraval‑like improv”, but still translate them into safe, English‑friendly descriptors for the AI (e.g., “improvised melodic development on main refrain”).[10][11]
+
+### 2.4 Robust testing and calibration
+
+- Define a **fixed test suite** of 30–50 configs that you periodically re‑run, sending prompts to Suno/HeartMuLa and rating: instrument presence, mood accuracy, vocal style, mix. Use that to tune mappings (e.g., slider → adjectives). User study work on text‑to‑music shows this type of loop significantly improves perceived control.[4]
+- Add automated regression: randomly sample 500 configs, ensure prompts stay ≤ 600 chars and contain at least genre + mood + 1–2 main instrument mentions.[12][3]
+
+***
+
+## 3. Architecture suggestion (React + Node + multi‑agent)
+
+### 3.1 Frontend (React / Next.js)
+
+- Components:  
+  - Sidebar: source input (lyrics, link, text), model selector (GPT, Gemini, etc.).  
+  - Main panels:  
+    - Global & Presets.  
+    - Instruments & Percussion & Guitars.  
+    - Vocals & Ornamentation.  
+    - Structure & Mix.  
+  - Bottom bar:  
+    - Prompt detail slider, live character counter, final prompt box.  
+    - Prompt Quality Score + color badge (green/yellow/red).  
+    - “Small text previews” per section (microPromptPreview per preset and per instrument/section).  
+- State: keep a single `uiState` object matching the JSON schema; send diffs to backend.
+
+### 3.2 Backend (Node/TypeScript)
+
+- Core services:  
+  - `schemaService`: validates / normalizes `uiState` into `normalizedSchema`.  
+  - `agentsService`: orchestrates calls to different LLMs (via your APIs: GPT, Opus, Gemini, Mistral, Ollama).  
+  - `promptService`: runs the pipeline `schema → abstract_description → platform_prompt → length_adjusted → final_prompt`.  
+  - `presetService`: loads presets, applies them to `uiState`, supports morphing between presets.  
+  - `learningService`: stores user sessions, ratings, and updates mapping coefficients or recommendations.
+
+### 3.3 Multi‑agent layer
+
+- Use a lightweight graph/orchestration layer (CrewAI / LangGraph‑style) behind `agentsService` to define nodes:  
+  - `LLM_analysis_node`: from lyrics/link → analysis summary JSON.  
+  - `schema_agent_node`: merges UI + analysis → normalizedSchema.  
+  - `style_composer_node`: → rich narrative + structured sections.  
+  - `platform_adapter_node`: → raw platform text.  
+  - `length_controller_node`: uses current target chars from slider; asks an LLM to compress or slightly expand while preserving key musical tags.  
+  - `quality_constraints_node`: validates, cleans adjectives, filters risky words, ensures 600‑char cap.[13][14][15][12]
+
+### 3.4 Data and learning
+
+- Storage:  
+  - `presets.json` (like we drafted, extended to 25–50).  
+  - `user_profiles` table: favorite genres, instruments, languages, production styles.  
+  - `prompt_logs` table: normalizedSchema snapshot, generated prompt, platform, and optional user rating and outcome (kept/discarded).  
+- Use these to:  
+  - Suggest 3–5 “Recommended starting presets today”.  
+  - Improve mapping, e.g., if users usually raise percussion after listening, increase weight of percussion in description for similar configs.
+
+***
+
+If you’d like, next I can:  
+- Draft an example end‑to‑end JSON message between React and your Node backend (request/response), or  
+- Design a concrete Suno‑specific “playbook” JSON that your platform_adapter_agent uses for Tamil/Carnatic styles.
+
+Sources
+[1] How to Write a Prompt for AI Music | Advanced Guide https://www.imagine.art/blogs/how-to-write-prompt-for-AI-Music
+[2] How to Write Better AI Music Prompts - OpenMusic AI https://www.openmusic.ai/docs/how-to/write-effective-prompts
+[3] 5 Key Elements of an Effective AI Music Prompt - SendFame https://sendfame.com/blog/ai-music-prompt
+[4] [PDF] AI-Assisted Music Production: A User Study on Text-to-Music Models https://www.arxiv.org/pdf/2509.23364.pdf
+[5] What I've learned about UX design from an AI music project https://uxplanet.org/what-ive-learned-about-ux-design-from-an-ai-music-project-eedec3260c20
+[6] Expanded Insight and Guidance on Suno Style Prompt Writing from ... https://www.reddit.com/r/SunoAI/comments/1h4zc7e/expanded_insight_and_guidance_on_suno_style/
+[7] What prompts work best for getting unique sounds from ai music tools? https://www.facebook.com/groups/2703779406444247/posts/3138269126328604/
+[8] How to structure prompts for Suno AI https://howtopromptsuno.com/making-music
+[9] A Complete How-To Guide to Suno: The Easiest Way to Create ... https://learnprompting.org/blog/guide-suno
+[10] Carnatic music - Wikipedia https://en.wikipedia.org/wiki/Carnatic_music
+[11] Adjectives For Carnatic music - Describing Words https://describingwords.io/for/carnatic%20music
+[12] Multi Agent Orchestration - Kore.ai https://www.kore.ai/ai-agent-platform/multi-agent-orchestration
+[13] Best Multi-Agent Orchestration Platforms for Enterprise AI Workflows https://www.techaheadcorp.com/blog/multi-agent-orchestration-for-enterprise-ai-workflows/
+[14] Multi-agent orchestration is the future of AI coding. Here are ... - Reddit https://www.reddit.com/r/ClaudeAI/comments/1pgmiox/multiagent_orchestration_is_the_future_of_ai/
+[15] The Leading Multi-Agent Platform https://www.crewai.com
+
+
+
+
+
+
+POST /api/generate-prompt
+Content-Type: application/json
+
+{
+  "uiState": {
+    "globalConfig": {
+      "targetPlatform": "suno",
+      "genre": ["tamil_film", "indian_fusion"],
+      "tempo": { "feel": "fast", "bpmRange": { "min": 120, "max": 140 } },
+      "moodAxes": {
+        "calm_to_energetic": 85,
+        "dark_to_bright": 70,
+        "intimate_to_epic": 80,
+        "devotional_to_romantic": 40
+      },
+      "useCase": "full_song"
+    },
+    "instrumentation": {
+      "percussionGlobal": {
+        "kitPreset": "edm_plus_indian",
+        "grooveFeel": "straight",
+        "densityMain": 85,
+        "fillsFrequency": 70,
+        "layering": "dense"
+      },
+      "guitarsGlobal": {
+        "dominantRole": "lead",
+        "toneAdjectives": ["aggressive", "bright"],
+        "effectToggles": {
+          "delay": true,
+          "reverb": true,
+          "chorus": false,
+          "overdrive": true,
+          "distortion": true,
+          "tremolo": false,
+          "wah": false
+        }
+      },
+      "instrumentsState": {
+        "parai": { "enabled": true, "intensity": 80, "style": "festival_peak" },
+        "drumkit_acoustic": { "enabled": true, "intensity": 85, "style": "rock" },
+        "synth_bass": { "enabled": true, "intensity": 90, "style": "aggressive" },
+        "electric_guitar_lead": { "enabled": true, "intensity": 75, "gain": 75 },
+        "pad_hype": { "enabled": true, "intensity": 50 }
+      }
+    },
+    "vocals": {
+      "level": 85,
+      "density": 70,
+      "lineComplexity": 55,
+      "rhythmicTightness": 80,
+      "language": { "primary": "tamil", "codeSwitching": 25 },
+      "role": ["lead_plus_harmonies", "hook_chant"],
+      "style": ["tamil_film_mass", "gaana"],
+      "genderTimbre": {
+        "genderBlend": 60,
+        "toneSliders": { "chesty": 70, "raspy": 40, "brightness": 65 }
+      },
+      "performance": {
+        "vibratoDepth": 20,
+        "ornamentationLevel": 30,
+        "pitchSlides": 30,
+        "reverbAmount": 55,
+        "delayAmount": 45
+      }
+    },
+    "ornamentation": {
+      "folk": {
+        "tamilFolkFeel": 80,
+        "gaanaStyle": 80,
+        "festivalEnergy": 90
+      },
+      "carnatic": {
+        "gamakamIntensity": 25
+      },
+      "hums": { "enabled": false }
+    },
+    "structure": {
+      "form": "build_and_drop",
+      "energyCurve": { "start": 60, "peak": 95, "end": 70, "buildRate": 80 }
+    },
+    "mix": {
+      "mixAdjectives": ["modern_pop", "club_ready", "punchy"],
+      "space": "wide_ambient",
+      "focus": "balanced"
+    },
+    "promptLengthControl": 60,
+    "macroCoherence": {
+      "overall_density": 80,
+      "clarity_vs_complexity": 45,
+      "vocal_vs_instrumental_focus": 65
+    },
+    "sourceInput": {
+      "sourceType": "lyrics_text",
+      "lyricsText": "Short Tamil hook line you pasted here...",
+      "externalLink": null,
+      "analysisModels": ["gpt", "gemini"]
+    }
+  }
+}
+
+
+
+
+
+{
+  "finalPrompt": "High-energy Tamil film mass track, fast and festival-like, with EDM drums, parai ensemble, punchy rock kit and aggressive synth bass, bright electric guitar leads and hype pads. Tamil lead and chant-style hooks with a touch of gaana flavour, club-ready modern mix with wide ambience and strong drops.",
+  "characterCount": 351,
+  "targetChars": 380,
+  "promptQualityScore": 87,
+  "coherenceColor": "green",
+  "platform": "suno",
+  "producerViewNarrative": "You are creating a high-energy Tamil film mass song that mixes festival street vibes with modern EDM and rock. The rhythm section is driven by a parai ensemble layered with punchy acoustic drums and an aggressive synth bass, supporting bright electric guitar leads. Vocals are Tamil, powerful and chesty, with crowd-chant hooks and gaana influences. The track builds into big drops with a wide, club-ready mix suitable for Suno-style AI generation.",
+  "sectionSummaries": {
+    "instruments": "Parai, rock drumkit, aggressive synth bass, bright lead guitars, hype pads.",
+    "vocals": "Tamil mass-style lead, chant hooks, chesty tone, moderate rasp and brightness.",
+    "ornamentation": "Gaana feel and festival folk energy; light gamakam only.",
+    "structure": "Build-and-drop form, high peak energy, strong drops.",
+    "mix": "Modern pop/EDM punch with wide ambience, balanced band and vocals."
+  },
+  "modelAttribution": {
+    "chosenAnalyzerModel": "ensemble",
+    "modelsUsed": ["gpt", "gemini"],
+    "analysisSummaryId": "analysis_abc123"
+  },
+  "diffSinceLastPrompt": "Increased percussion density and vocal focus, added explicit gaana and festival references, strengthened club-ready mix wording."
+}
+
+
+
+
+{
+  "platform": "suno",
+  "version": "v1.0",
+  "stylePromptLimitHint": 200,
+  "hardMaxChars": 600,
+  "preferredCharRange": { "min": 140, "max": 260 },
+
+  "sectionOrder": [
+    "genre_tempo_mood",
+    "instrumentation",
+    "vocals",
+    "ornamentation",
+    "structure_dynamics",
+    "mix_intent"
+  ],
+
+  "allowedSections": {
+    "lyricsField": false,
+    "sectionTags": false,
+    "metaTags": true
+  },
+
+  "phraseTemplates": {
+    "genre_tempo_mood": [
+      "{tempoFeel} {primaryGenres} track with {primaryMood} mood",
+      "{primaryGenres} song, {tempoFeel} feel, {moodAxisSummary}"
+    ],
+    "instrumentation": [
+      "featuring {primaryIndianInstruments} with {percussionDescriptor}",
+      "with {guitarDescriptor} over {percussionDescriptor}",
+      "supported by {padOrStringsDescriptor}"
+    ],
+    "vocals": [
+      "Tamil lead vocals in {vocalStyle} style",
+      "Tamil {vocalEmotion} vocals with {vocalDensityDescriptor}",
+      "Tamil lead and chant hooks with {vocalTimbreDescriptor}"
+    ],
+    "ornamentation": [
+      "touches of {carnaticFlavorDescriptor}",
+      "{folkEnergyDescriptor} folk energy",
+      "subtle {ornamentationDescriptor}"
+    ],
+    "structure_dynamics": [
+      "builds from {startEnergyDescriptor} intro to {peakEnergyDescriptor} chorus",
+      "rises from {startEnergyDescriptor} into {dropDescriptor}"
+    ],
+    "mix_intent": [
+      "in a {mixAdjectiveSummary} mix",
+      "with {spaceDescriptor} space and {focusDescriptor}"
+    ]
+  },
+
+  "safeVocabularies": {
+    "tempoFeel": ["slow", "medium", "fast", "mid-tempo"],
+    "primaryMood": [
+      "emotional",
+      "uplifting",
+      "melancholic",
+      "dramatic",
+      "festive",
+      "devotional",
+      "romantic",
+      "energetic"
+    ],
+    "percussionDescriptors": [
+      "tight mridangam groove",
+      "parai ensemble drive",
+      "EDM drums and Indian percussion",
+      "punchy rock drums",
+      "cinematic percussion bed"
+    ],
+    "guitarDescriptors": [
+      "bright electric guitar leads",
+      "warm acoustic guitar strums",
+      "crunchy rock riffs",
+      "ambient guitar textures"
+    ],
+    "vocalStyles": [
+      "Tamil film",
+      "mass song",
+      "devotional",
+      "folk",
+      "light classical"
+    ],
+    "mixAdjectives": [
+      "lush",
+      "punchy",
+      "club-ready",
+      "cinematic",
+      "warm",
+      "clean",
+      "lofi"
+    ],
+    "spaceDescriptors": [
+      "intimate room",
+      "wide hall",
+      "wide ambient",
+      "dry and close"
+    ],
+    "focusDescriptors": [
+      "vocal-forward",
+      "guitar-forward",
+      "balanced band and vocals"
+    ]
+  },
+
+  "forbiddenTokens": {
+    "artistNames": true,
+    "brandNames": true,
+    "explicitSectionTags": ["[Verse]", "[Chorus]", "[Bridge]"],
+    "technicalNoise": ["BPM", "Hz", "LUFS"]
+  },
+
+  "compressionStrategy": {
+    "priorityOrder": [
+      "genre_tempo_mood",
+      "instrumentation",
+      "vocals",
+      "mix_intent",
+      "structure_dynamics",
+      "ornamentation"
+    ],
+    "dropRules": [
+      {
+        "ifCharsAbove": 260,
+        "dropSections": ["ornamentation"]
+      },
+      {
+        "ifCharsAbove": 320,
+        "shortenPhrasesIn": ["instrumentation", "vocals"]
+      },
+      {
+        "ifCharsAbove": 400,
+        "dropSections": ["structure_dynamics"]
+      }
+    ]
+  },
+
+  "mappingFromSchema": {
+    "genre_tempo_mood": {
+      "primaryGenres": "globalConfig.genre",
+      "tempoFeel": "globalConfig.tempo.feel",
+      "moodAxisSummary": "globalConfig.moodAxes"
+    },
+    "instrumentation": {
+      "primaryIndianInstruments": [
+        "instrumentation.instruments.veena",
+        "instrumentation.instruments.nadaswaram",
+        "instrumentation.instruments.mridangam",
+        "instrumentation.instruments.parai",
+        "instrumentation.instruments.tabla"
+      ],
+      "percussionDescriptor": "instrumentation.percussionGlobal",
+      "guitarDescriptor": "instrumentation.guitarsGlobal",
+      "padOrStringsDescriptor": [
+        "instrumentation.instruments.pad_*",
+        "instrumentation.instruments.strings_*"
+      ]
+    },
+    "vocals": {
+      "vocalStyle": "vocals.style",
+      "vocalEmotion": "globalConfig.moodAxes.devotional_to_romantic",
+      "vocalDensityDescriptor": "vocals.density",
+      "vocalTimbreDescriptor": "vocals.genderTimbre.toneSliders"
+    },
+    "ornamentation": {
+      "carnaticFlavorDescriptor": "ornamentation.carnatic",
+      "folkEnergyDescriptor": "ornamentation.folk",
+      "ornamentationDescriptor": "ornamentation.hums"
+    },
+    "structure_dynamics": {
+      "startEnergyDescriptor": "structure.energyCurve.start",
+      "peakEnergyDescriptor": "structure.energyCurve.peak",
+      "dropDescriptor": "structure.form"
+    },
+    "mix_intent": {
+      "mixAdjectiveSummary": "mix.mixAdjectives",
+      "spaceDescriptor": "mix.space",
+      "focusDescriptor": "mix.focus"
+    }
+  },
+
+  "exampleAssembly": {
+    "inputSummary": {
+      "genre": ["tamil_film", "indian_fusion"],
+      "tempoFeel": "fast",
+      "primaryMood": "festive",
+      "primaryIndianInstruments": ["parai ensemble", "mridangam"],
+      "guitarDescriptor": "bright electric guitar leads",
+      "vocalStyle": "Tamil film mass",
+      "mixAdjectiveSummary": "punchy club-ready",
+      "spaceDescriptor": "wide ambient"
+    },
+    "assembledPromptExample": "Fast Tamil film fusion track with festive mood, featuring parai ensemble and mridangam with EDM drums, bright electric guitar leads and synth bass, Tamil film mass vocals with chant hooks in a punchy, club-ready wide ambient mix."
+  }
+}

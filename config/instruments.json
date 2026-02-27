@@ -1,0 +1,526 @@
+{
+  "version": "1.0.0",
+  "instruments": [
+    {
+      "id": "veena",
+      "name": "Veena",
+      "category": "melodic",
+      "subcategory": "indian_string",
+      "styles": ["classical_carnatic", "film_melodic", "background_arps", "solo_improv"],
+      "registers": ["low", "mid", "high"],
+      "defaultIntensity": 50,
+      "tags": ["indian", "carnatic", "traditional", "string"]
+    },
+    {
+      "id": "nadaswaram",
+      "name": "Nadaswaram",
+      "category": "melodic",
+      "subcategory": "indian_wind",
+      "styles": ["temple_procession", "wedding_fanfare", "folk_lead", "cinematic_climax"],
+      "registers": ["mid", "high"],
+      "defaultIntensity": 60,
+      "tags": ["indian", "tamil", "festival", "wind", "traditional"]
+    },
+    {
+      "id": "violin_carnatic",
+      "name": "Violin (Carnatic)",
+      "category": "melodic",
+      "subcategory": "indian_string",
+      "styles": ["gayaki_style", "legato_strings", "solo_improv", "accompaniment"],
+      "registers": ["low", "mid", "high"],
+      "defaultIntensity": 60,
+      "tags": ["indian", "carnatic", "classical", "string"]
+    },
+    {
+      "id": "flute_bansuri",
+      "name": "Bansuri Flute",
+      "category": "melodic",
+      "subcategory": "indian_wind",
+      "styles": ["meditative", "romantic", "classical", "folk"],
+      "registers": ["mid", "high"],
+      "defaultIntensity": 50,
+      "tags": ["indian", "north_indian", "wind", "traditional"]
+    },
+    {
+      "id": "flute_venu",
+      "name": "Venu (South Indian Flute)",
+      "category": "melodic",
+      "subcategory": "indian_wind",
+      "styles": ["carnatic", "film", "devotional", "folk"],
+      "registers": ["mid", "high"],
+      "defaultIntensity": 50,
+      "tags": ["indian", "south_indian", "carnatic", "wind"]
+    },
+    {
+      "id": "harmonium",
+      "name": "Harmonium",
+      "category": "melodic",
+      "subcategory": "indian_keyboard",
+      "styles": ["devotional", "ghazal", "light_classical", "bhajan"],
+      "registers": ["low", "mid"],
+      "defaultIntensity": 45,
+      "tags": ["indian", "keyboard", "devotional", "traditional"]
+    },
+    {
+      "id": "santoor",
+      "name": "Santoor",
+      "category": "melodic",
+      "subcategory": "indian_string",
+      "styles": ["classical", "film", "ambient", "meditative"],
+      "registers": ["mid", "high"],
+      "defaultIntensity": 40,
+      "tags": ["indian", "kashmiri", "string", "struck"]
+    },
+    {
+      "id": "sitar",
+      "name": "Sitar",
+      "category": "melodic",
+      "subcategory": "indian_string",
+      "styles": ["classical", "fusion", "psychedelic", "film"],
+      "registers": ["low", "mid", "high"],
+      "defaultIntensity": 55,
+      "tags": ["indian", "north_indian", "string", "classical"]
+    },
+    {
+      "id": "sarangi",
+      "name": "Sarangi",
+      "category": "melodic",
+      "subcategory": "indian_string",
+      "styles": ["classical", "sad", "romantic", "film"],
+      "registers": ["low", "mid"],
+      "defaultIntensity": 45,
+      "tags": ["indian", "north_indian", "bowed", "emotional"]
+    },
+    {
+      "id": "mridangam",
+      "name": "Mridangam",
+      "category": "percussion",
+      "subcategory": "indian_drums",
+      "styles": ["tight_classical", "cinematic_bass_heavy", "light_folk_flavor"],
+      "talas": ["adi", "rupaka", "misra_chapu", "kanda_chapu"],
+      "defaultIntensity": 60,
+      "tags": ["indian", "carnatic", "south_indian", "drum"]
+    },
+    {
+      "id": "tabla",
+      "name": "Tabla",
+      "category": "percussion",
+      "subcategory": "indian_drums",
+      "styles": ["light_theka", "dense_fills", "fusion_with_drumkit", "cinematic_rolls"],
+      "defaultIntensity": 55,
+      "tags": ["indian", "north_indian", "hindustani", "drum"]
+    },
+    {
+      "id": "parai",
+      "name": "Parai",
+      "category": "percussion",
+      "subcategory": "indian_drums",
+      "styles": ["street_folk", "gaana_support", "festival_peak"],
+      "defaultIntensity": 70,
+      "tags": ["indian", "tamil", "folk", "drum", "festival"]
+    },
+    {
+      "id": "thavil",
+      "name": "Thavil",
+      "category": "percussion",
+      "subcategory": "indian_drums",
+      "styles": ["temple", "nadaswaram_accompaniment", "festival", "wedding"],
+      "defaultIntensity": 65,
+      "tags": ["indian", "tamil", "south_indian", "drum", "loud"]
+    },
+    {
+      "id": "ghatam",
+      "name": "Ghatam",
+      "category": "percussion",
+      "subcategory": "indian_drums",
+      "styles": ["classical_support", "rhythmic_texture", "subtle_fills"],
+      "defaultIntensity": 40,
+      "tags": ["indian", "carnatic", "clay_pot", "percussion"]
+    },
+    {
+      "id": "kanjira",
+      "name": "Kanjira",
+      "category": "percussion",
+      "subcategory": "indian_drums",
+      "styles": ["classical_accompaniment", "light_fills", "folk"],
+      "defaultIntensity": 35,
+      "tags": ["indian", "carnatic", "frame_drum", "percussion"]
+    },
+    {
+      "id": "dholak",
+      "name": "Dholak",
+      "category": "percussion",
+      "subcategory": "indian_drums",
+      "styles": ["folk", "bhajan", "qawwali", "bollywood"],
+      "defaultIntensity": 55,
+      "tags": ["indian", "folk", "drum", "two_sided"]
+    },
+    {
+      "id": "dhol",
+      "name": "Dhol",
+      "category": "percussion",
+      "subcategory": "indian_drums",
+      "styles": ["bhangra", "celebration", "high_energy", "wedding"],
+      "defaultIntensity": 75,
+      "tags": ["indian", "punjabi", "loud", "drum", "dance"]
+    },
+    {
+      "id": "acoustic_guitar_steel",
+      "name": "Acoustic Guitar (Steel String)",
+      "category": "guitar",
+      "subcategory": "acoustic",
+      "roles": ["rhythm_bed", "arpeggios", "percussive_strums", "counter_melody"],
+      "tones": ["bright", "warm", "dark", "sparkly", "percussive"],
+      "defaultIntensity": 50,
+      "tags": ["western", "acoustic", "strumming", "fingerpicking"]
+    },
+    {
+      "id": "acoustic_guitar_nylon",
+      "name": "Acoustic Guitar (Nylon/Classical)",
+      "category": "guitar",
+      "subcategory": "acoustic",
+      "roles": ["fingerstyle", "arpeggios", "melody", "flamenco"],
+      "tones": ["warm", "mellow", "soft", "intimate"],
+      "defaultIntensity": 45,
+      "tags": ["western", "classical", "nylon", "fingerstyle"]
+    },
+    {
+      "id": "electric_guitar_clean",
+      "name": "Electric Guitar (Clean)",
+      "category": "guitar",
+      "subcategory": "electric",
+      "roles": ["arpeggios", "chord_stabs", "funk_rhythm", "ambient"],
+      "tones": ["clean_glassy", "bright", "warm", "jazzy"],
+      "defaultIntensity": 50,
+      "tags": ["western", "electric", "clean", "versatile"]
+    },
+    {
+      "id": "electric_guitar_crunch",
+      "name": "Electric Guitar (Crunch)",
+      "category": "guitar",
+      "subcategory": "electric",
+      "roles": ["rhythm", "power_chords", "riffs", "rock"],
+      "tones": ["crunchy", "warm_overdrive", "british"],
+      "defaultIntensity": 60,
+      "tags": ["western", "electric", "overdrive", "rock"]
+    },
+    {
+      "id": "electric_guitar_lead",
+      "name": "Electric Guitar (Lead/High Gain)",
+      "category": "guitar",
+      "subcategory": "electric",
+      "roles": ["melodic_lead", "riffs", "solos", "shred"],
+      "tones": ["high_gain", "aggressive", "creamy", "singing"],
+      "defaultIntensity": 65,
+      "tags": ["western", "electric", "distortion", "lead", "solo"]
+    },
+    {
+      "id": "slide_guitar",
+      "name": "Slide Guitar",
+      "category": "guitar",
+      "subcategory": "acoustic",
+      "roles": ["melodic_lead", "ambient", "blues", "country"],
+      "tones": ["crying", "bluesy", "vocal", "ambient"],
+      "defaultIntensity": 45,
+      "tags": ["western", "slide", "blues", "expressive"]
+    },
+    {
+      "id": "bass_guitar_electric",
+      "name": "Bass Guitar (Electric)",
+      "category": "bass",
+      "subcategory": "electric",
+      "styles": ["fingerstyle", "pick", "slap", "fretless"],
+      "tones": ["warm", "punchy", "round", "aggressive", "deep"],
+      "defaultIntensity": 55,
+      "tags": ["western", "bass", "electric", "foundation"]
+    },
+    {
+      "id": "bass_synth",
+      "name": "Synth Bass",
+      "category": "bass",
+      "subcategory": "synth",
+      "styles": ["sub_bass", "wobble", "reese", "808", "acid"],
+      "tones": ["deep", "aggressive", "warm", "punchy"],
+      "defaultIntensity": 60,
+      "tags": ["electronic", "synth", "bass", "edm"]
+    },
+    {
+      "id": "upright_bass",
+      "name": "Upright Bass / Double Bass",
+      "category": "bass",
+      "subcategory": "acoustic",
+      "styles": ["jazz", "orchestral", "folk", "pizzicato", "bowed"],
+      "tones": ["warm", "woody", "deep", "acoustic"],
+      "defaultIntensity": 50,
+      "tags": ["acoustic", "bass", "jazz", "orchestral"]
+    },
+    {
+      "id": "drumkit_acoustic",
+      "name": "Acoustic Drum Kit",
+      "category": "percussion",
+      "subcategory": "western_drums",
+      "styles": ["tight_pop", "rock", "jazz_brushes", "big_room_cinematic", "soft_ballad"],
+      "defaultIntensity": 60,
+      "tags": ["western", "drums", "kit", "versatile"]
+    },
+    {
+      "id": "drumkit_electronic",
+      "name": "Electronic Drums / EDM Kit",
+      "category": "percussion",
+      "subcategory": "electronic",
+      "styles": ["festival", "house", "trap", "dubstep", "ambient"],
+      "defaultIntensity": 65,
+      "tags": ["electronic", "drums", "edm", "synth"]
+    },
+    {
+      "id": "claps",
+      "name": "Claps",
+      "category": "percussion",
+      "subcategory": "body_percussion",
+      "styles": ["folk", "pop", "electronic", "crowd"],
+      "defaultIntensity": 40,
+      "tags": ["percussion", "body", "rhythmic", "folk"]
+    },
+    {
+      "id": "shakers",
+      "name": "Shakers / Maracas",
+      "category": "percussion",
+      "subcategory": "aux_percussion",
+      "styles": ["latin", "pop", "folk", "ambient"],
+      "defaultIntensity": 30,
+      "tags": ["percussion", "shaker", "texture", "rhythmic"]
+    },
+    {
+      "id": "tambourine",
+      "name": "Tambourine",
+      "category": "percussion",
+      "subcategory": "aux_percussion",
+      "styles": ["pop", "rock", "folk", "gospel"],
+      "defaultIntensity": 35,
+      "tags": ["percussion", "jingle", "texture", "accent"]
+    },
+    {
+      "id": "congas",
+      "name": "Congas",
+      "category": "percussion",
+      "subcategory": "latin",
+      "styles": ["latin", "salsa", "jazz", "afrobeat"],
+      "defaultIntensity": 50,
+      "tags": ["latin", "percussion", "hand_drum", "groove"]
+    },
+    {
+      "id": "bongos",
+      "name": "Bongos",
+      "category": "percussion",
+      "subcategory": "latin",
+      "styles": ["latin", "jazz", "pop", "light"],
+      "defaultIntensity": 40,
+      "tags": ["latin", "percussion", "hand_drum", "accent"]
+    },
+    {
+      "id": "strings_orchestra",
+      "name": "Orchestral Strings",
+      "category": "texture",
+      "subcategory": "orchestral",
+      "styles": ["legato", "staccato", "pizzicato", "tremolo", "swell"],
+      "registers": ["low", "mid", "high"],
+      "defaultIntensity": 55,
+      "tags": ["orchestral", "strings", "cinematic", "lush"]
+    },
+    {
+      "id": "strings_ensemble",
+      "name": "String Ensemble / Section",
+      "category": "texture",
+      "subcategory": "ensemble",
+      "styles": ["pad", "legato", "rhythmic", "film"],
+      "defaultIntensity": 50,
+      "tags": ["strings", "ensemble", "pad", "film"]
+    },
+    {
+      "id": "brass_section",
+      "name": "Brass Section",
+      "category": "texture",
+      "subcategory": "orchestral",
+      "styles": ["fanfare", "stabs", "legato", "funk"],
+      "defaultIntensity": 55,
+      "tags": ["brass", "orchestral", "powerful", "cinematic"]
+    },
+    {
+      "id": "brass_synth",
+      "name": "Synth Brass",
+      "category": "texture",
+      "subcategory": "synth",
+      "styles": ["retro", "modern", "stabs", "pads"],
+      "defaultIntensity": 50,
+      "tags": ["synth", "brass", "electronic", "80s"]
+    },
+    {
+      "id": "pad_analog",
+      "name": "Analog Pad",
+      "category": "texture",
+      "subcategory": "synth",
+      "styles": ["warm", "dark", "bright", "evolving"],
+      "defaultIntensity": 45,
+      "tags": ["synth", "pad", "analog", "ambient"]
+    },
+    {
+      "id": "pad_digital",
+      "name": "Digital Pad",
+      "category": "texture",
+      "subcategory": "synth",
+      "styles": ["glassy", "shimmering", "ethereal", "metallic"],
+      "defaultIntensity": 45,
+      "tags": ["synth", "pad", "digital", "ambient"]
+    },
+    {
+      "id": "pad_choir",
+      "name": "Choir Pad / Vocal Synth",
+      "category": "texture",
+      "subcategory": "vocal_texture",
+      "styles": ["oohs", "aahs", "angelic", "dark"],
+      "defaultIntensity": 40,
+      "tags": ["vocal", "synth", "pad", "ethereal"]
+    },
+    {
+      "id": "ambient_textures",
+      "name": "Ambient Textures",
+      "category": "texture",
+      "subcategory": "ambient",
+      "styles": ["drones", "field_recording", "noise", "evolving"],
+      "defaultIntensity": 30,
+      "tags": ["ambient", "texture", "atmospheric", "background"]
+    },
+    {
+      "id": "piano_grand",
+      "name": "Grand Piano",
+      "category": "melodic",
+      "subcategory": "keyboard",
+      "styles": ["classical", "jazz", "ballad", "pop"],
+      "registers": ["low", "mid", "high"],
+      "defaultIntensity": 55,
+      "tags": ["piano", "keyboard", "classical", "versatile"]
+    },
+    {
+      "id": "piano_electric",
+      "name": "Electric Piano (Rhodes/Wurlitzer)",
+      "category": "melodic",
+      "subcategory": "keyboard",
+      "styles": ["jazz", "soul", "r&b", "neo_soul"],
+      "defaultIntensity": 50,
+      "tags": ["piano", "electric", "vintage", "soulful"]
+    },
+    {
+      "id": "organ_hammond",
+      "name": "Hammond Organ",
+      "category": "melodic",
+      "subcategory": "keyboard",
+      "styles": ["gospel", "jazz", "rock", "blues"],
+      "defaultIntensity": 55,
+      "tags": ["organ", "vintage", "soulful", "powerful"]
+    },
+    {
+      "id": "synth_lead",
+      "name": "Synth Lead",
+      "category": "melodic",
+      "subcategory": "synth",
+      "styles": ["saw", "square", "supersaw", "acid"],
+      "defaultIntensity": 55,
+      "tags": ["synth", "lead", "electronic", "melodic"]
+    },
+    {
+      "id": "synth_arp",
+      "name": "Synth Arpeggiator",
+      "category": "texture",
+      "subcategory": "synth",
+      "styles": ["edm", "retro", "ambient", "rhythmic"],
+      "defaultIntensity": 45,
+      "tags": ["synth", "arpeggio", "electronic", "texture"]
+    },
+    {
+      "id": "tanpura",
+      "name": "Tanpura / Tambura",
+      "category": "texture",
+      "subcategory": "indian_drone",
+      "styles": ["classical", "devotional", "meditation"],
+      "defaultIntensity": 50,
+      "tags": ["indian", "drone", "carnatic", "hindustani", "ambient"]
+    },
+    {
+      "id": "temple_bells",
+      "name": "Temple Bells",
+      "category": "texture",
+      "subcategory": "indian_texture",
+      "styles": ["devotional", "ambient", "accent"],
+      "defaultIntensity": 30,
+      "tags": ["indian", "bells", "devotional", "texture"]
+    },
+    {
+      "id": "manjira",
+      "name": "Manjira / Cymbals",
+      "category": "percussion",
+      "subcategory": "indian_percussion",
+      "styles": ["devotional", "classical", "folk", "accent"],
+      "defaultIntensity": 30,
+      "tags": ["indian", "cymbals", "devotional", "percussion"]
+    },
+    {
+      "id": "shehnai",
+      "name": "Shehnai",
+      "category": "melodic",
+      "subcategory": "indian_wind",
+      "styles": ["wedding", "classical", "auspicious", "film"],
+      "registers": ["mid", "high"],
+      "defaultIntensity": 55,
+      "tags": ["indian", "north_indian", "wind", "wedding"]
+    }
+  ],
+  "categories": {
+    "melodic": {
+      "label": "Melodic",
+      "description": "Lead and melodic instruments",
+      "color": "#3B82F6"
+    },
+    "percussion": {
+      "label": "Percussion",
+      "description": "Drums and rhythmic instruments",
+      "color": "#EF4444"
+    },
+    "guitar": {
+      "label": "Guitars",
+      "description": "Acoustic and electric guitars",
+      "color": "#F59E0B"
+    },
+    "bass": {
+      "label": "Bass",
+      "description": "Bass instruments",
+      "color": "#8B5CF6"
+    },
+    "texture": {
+      "label": "Texture & Pads",
+      "description": "Pads, strings, ambient textures",
+      "color": "#10B981"
+    }
+  },
+  "subcategories": {
+    "indian_string": "Indian Strings",
+    "indian_wind": "Indian Winds",
+    "indian_keyboard": "Indian Keyboards",
+    "indian_drums": "Indian Drums",
+    "indian_drone": "Indian Drones",
+    "indian_texture": "Indian Textures",
+    "indian_percussion": "Indian Percussion",
+    "western_drums": "Western Drums",
+    "acoustic": "Acoustic",
+    "electric": "Electric",
+    "synth": "Synthesizers",
+    "orchestral": "Orchestral",
+    "ensemble": "Ensemble",
+    "ambient": "Ambient",
+    "keyboard": "Keyboard",
+    "vocal_texture": "Vocal Textures",
+    "aux_percussion": "Auxiliary Percussion",
+    "body_percussion": "Body Percussion",
+    "latin": "Latin Percussion",
+    "electronic": "Electronic"
+  }
+}
