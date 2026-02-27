@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm turbo build --filter=@aiswara/web",
   "outputDirectory": "apps/web/.next",
-  "framework": null,
+  "framework": "nextjs",
   "installCommand": "pnpm install",
   "devCommand": "pnpm turbo dev --filter=@aiswara/web"
 }
