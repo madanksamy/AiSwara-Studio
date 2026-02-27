@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm turbo build --filter=web",
+  "buildCommand": "pnpm turbo build --filter=@aiswara/web",
   "outputDirectory": "apps/web/.next",
   "framework": null,
   "installCommand": "pnpm install",
-  "devCommand": "pnpm turbo dev --filter=web"
+  "devCommand": "pnpm turbo dev --filter=@aiswara/web"
 }
