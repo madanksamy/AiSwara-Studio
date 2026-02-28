@@ -107,7 +107,7 @@ export function TamilLyricsSearch({ onSelect }: TamilLyricsSearchProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           Tamil Lyrics Search
-          <span className="text-xs text-zinc-500 ml-auto">tamil2lyrics.com</span>
+          <span className="text-xs text-zinc-500 ml-auto">tamizhlyrics.com</span>
         </h3>
       </div>
 
@@ -210,12 +210,12 @@ export function TamilLyricsSearch({ onSelect }: TamilLyricsSearchProps) {
                 Use as Inspiration
               </button>
               <a
-                href={selectedLyric.url}
+                href={`https://tamizhlyrics.com/?search=${encodeURIComponent(selectedLyric.song_title)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 text-xs rounded transition-colors flex items-center gap-1"
               >
-                View on tamil2lyrics.com
+                View on tamizhlyrics.com
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>

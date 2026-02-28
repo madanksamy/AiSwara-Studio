@@ -162,7 +162,7 @@ export function LyricInput({ onLyricChange }: LyricInputProps) {
       {mode === 'search' && (
         <div className="text-center py-4 text-zinc-500 text-sm">
           <p>Use the Tamil Lyrics Search panel below</p>
-          <p className="text-xs mt-1">Search tamil2lyrics.com (20,000+ songs)</p>
+          <p className="text-xs mt-1">Search tamizhlyrics.com (20,000+ songs)</p>
         </div>
       )}
     </div>
