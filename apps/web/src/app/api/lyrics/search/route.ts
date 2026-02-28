@@ -39,101 +39,55 @@ async function searchTamil2Lyrics(query: string, limit: number) {
   const $ = cheerio.load(html);
   const results: SearchResult[] = [];
 
-  $('.post-list .item').each((index, element) => {
+  // Tamil2lyrics.com uses Bootstrap grid rows with class "list-line"
+  // Structure: .list-line > .col-lg-6 (song link) + .col-lg-3 (movie) + .col-lg-3 (lyricist)
+  $('.list-line').each((index, element) => {
     if (index >= limit) return false;
 
-    const $item = $(element);
-    const $titleLink = $item.find('a.post_title, a.title');
-    const $thumb = $item.find('.post_thumb img');
+    const $row = $(element);
+    const columns = $row.find('[class*="col-"]');
 
-    const songTitle = $titleLink.text().trim();
-    const songUrl = $titleLink.attr('href') || '';
-    const thumbnail = $thumb.attr('src') || '';
+    if (columns.length < 2) return;
+
+    // First column: song title + link
+    const $songCol = $(columns[0]);
+    const $songLink = $songCol.find('a[href*="/lyrics/"]');
+    const songTitle = $songLink.text().trim();
+    const songUrl = $songLink.attr('href') || '';
 
     if (!songTitle || !songUrl) return;
 
-    // Extract metadata from title patterns like "Song Name Song Lyrics"
+    // Second column: movie/album link
+    const $movieCol = $(columns[1]);
+    const $movieLink = $movieCol.find('a[href*="/movies/"], a[href*="/album/"]');
+    const movieName = $movieLink.text().trim();
+
+    // Third column: lyricist link (if present)
+    const $lyricistCol = columns.length >= 3 ? $(columns[2]) : null;
+    const lyricistName = $lyricistCol
+      ? $lyricistCol.find('a[href*="/Lyricist/"], a[href*="/lyricist/"]').text().trim()
+      : '';
+
+    // Clean song title: remove "Song Lyrics" suffix
     const cleanTitle = songTitle
       .replace(/\s+Song\s+Lyrics$/i, '')
       .replace(/\s+Lyrics$/i, '')
       .trim();
 
     results.push({
-      id: songUrl, // Use URL as unique identifier
+      id: songUrl,
       song_title: cleanTitle,
-      movie_name: '',  // Populated on detail fetch
+      movie_name: movieName,
       singer: '',
-      lyricist: '',
+      lyricist: lyricistName,
       music_director: '',
       year: 0,
       lyrics_preview: '',
       url: songUrl,
-      thumbnail,
     });
   });
 
-  // Enrich first 5 results with metadata from meta descriptions
-  const enriched = await Promise.allSettled(
-    results.slice(0, 5).map(async (result) => {
-      try {
-        const meta = await fetchSongMeta(result.url);
-        return { ...result, ...meta };
-      } catch {
-        return result;
-      }
-    })
-  );
-
-  const enrichedResults = enriched.map((r) =>
-    r.status === 'fulfilled' ? r.value : results[0]
-  );
-
-  // Merge enriched results with remaining un-enriched ones
-  return [...enrichedResults, ...results.slice(5)];
-}
-
-async function fetchSongMeta(url: string): Promise<Partial<SearchResult>> {
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent': 'AiSwara-Studio/1.0 (Music Prompt Composer)',
-      'Accept': 'text/html',
-    },
-    next: { revalidate: 3600 }, // Cache for 1 hour
-  });
-
-  if (!response.ok) return {};
-
-  const html = await response.text();
-  const $ = cheerio.load(html);
-
-  // Extract from meta description
-  const metaDesc = $('meta[name="description"]').attr('content') || '';
-
-  const movieMatch = metaDesc.match(/Movie\s*(?:Name)?\s*:\s*([^,]+?)(?:\s*,\s*(?:Artists?|Music|Lyrics|Singer)|\s*$)/i);
-  const artistMatch = metaDesc.match(/Artists?\s*:\s*(.+?)(?:\s*,\s*(?:Music|Lyrics)|\s*$)/i);
-  const musicMatch = metaDesc.match(/Music\s*(?:Director)?\s*:\s*(.+?)(?:\s*,\s*(?:Lyrics|Artists?)|\s*$)/i);
-  const lyricistMatch = metaDesc.match(/Lyrics?\s*(?:by)?\s*:\s*(.+?)(?:\s*,\s*(?:Music|Artists?)|\s*$)/i);
-
-  // Extract lyrics preview from page content
-  const lyricsContent = $('div.entry-content, div.post-content, article .entry-content')
-    .first()
-    .text()
-    .trim();
-
-  const lyricsPreview = lyricsContent
-    .split('\n')
-    .filter((line) => line.trim().length > 0)
-    .slice(0, 4)
-    .join(' ')
-    .substring(0, 200);
-
-  return {
-    movie_name: movieMatch?.[1]?.trim() || '',
-    singer: artistMatch?.[1]?.trim() || '',
-    music_director: musicMatch?.[1]?.trim() || '',
-    lyricist: lyricistMatch?.[1]?.trim() || '',
-    lyrics_preview: lyricsPreview,
-  };
+  return results;
 }
 
 interface SearchResult {
@@ -146,5 +100,4 @@ interface SearchResult {
   year: number;
   lyrics_preview: string;
   url: string;
-  thumbnail?: string;
 }
