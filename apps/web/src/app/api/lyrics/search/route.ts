@@ -1,82 +1,150 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import * as cheerio from 'cheerio';
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mbtqrzpnombaqpwuspmm.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+const TAMIL2LYRICS_BASE = 'https://www.tamil2lyrics.com';
 
 export async function POST(request: NextRequest) {
   try {
-    const { query, mode = 'text', limit = 20 } = await request.json();
+    const { query, limit = 20 } = await request.json();
 
     if (!query || query.length < 2) {
       return NextResponse.json({ results: [] });
     }
 
-    let results;
-
-    if (mode === 'semantic') {
-      // Semantic search using pg_trgm similarity
-      // This requires the pg_trgm extension to be enabled in Supabase
-      const { data, error } = await supabase.rpc('search_lyrics_fuzzy', {
-        search_query: query,
-        match_limit: limit,
-      });
-
-      if (error) {
-        console.error('Semantic search error:', error);
-        // Fallback to text search
-        results = await performTextSearch(query, limit);
-      } else {
-        results = data;
-      }
-    } else {
-      // Standard text search with ILIKE
-      results = await performTextSearch(query, limit);
-    }
-
-    return NextResponse.json({ results: results || [] });
+    const results = await searchTamil2Lyrics(query, limit);
+    return NextResponse.json({ results });
   } catch (error) {
     console.error('Search error:', error);
     return NextResponse.json({ error: 'Search failed' }, { status: 500 });
   }
 }
 
-async function performTextSearch(query: string, limit: number) {
-  const searchTerms = query.split(' ').filter(Boolean);
-  const searchPattern = `%${query}%`;
+async function searchTamil2Lyrics(query: string, limit: number) {
+  const searchUrl = `${TAMIL2LYRICS_BASE}/?s=${encodeURIComponent(query)}&post_type=lyrics`;
 
-  // Search across multiple columns
-  const { data, error } = await supabase
-    .from('tamil_lyrics')
-    .select(`
-      id,
-      song_title,
-      movie_name,
-      singer,
-      lyricist,
-      music_director,
-      year,
-      lyrics_preview,
-      url
-    `)
-    .or(
-      `song_title.ilike.${searchPattern},` +
-      `movie_name.ilike.${searchPattern},` +
-      `singer.ilike.${searchPattern},` +
-      `lyricist.ilike.${searchPattern},` +
-      `music_director.ilike.${searchPattern},` +
-      `lyrics_preview.ilike.${searchPattern}`
-    )
-    .limit(limit)
-    .order('year', { ascending: false });
+  const response = await fetch(searchUrl, {
+    headers: {
+      'User-Agent': 'AiSwara-Studio/1.0 (Music Prompt Composer)',
+      'Accept': 'text/html',
+    },
+    next: { revalidate: 300 }, // Cache for 5 minutes
+  });
 
-  if (error) {
-    console.error('Text search error:', error);
+  if (!response.ok) {
+    console.error(`tamil2lyrics.com returned ${response.status}`);
     return [];
   }
 
-  return data;
+  const html = await response.text();
+  const $ = cheerio.load(html);
+  const results: SearchResult[] = [];
+
+  $('.post-list .item').each((index, element) => {
+    if (index >= limit) return false;
+
+    const $item = $(element);
+    const $titleLink = $item.find('a.post_title, a.title');
+    const $thumb = $item.find('.post_thumb img');
+
+    const songTitle = $titleLink.text().trim();
+    const songUrl = $titleLink.attr('href') || '';
+    const thumbnail = $thumb.attr('src') || '';
+
+    if (!songTitle || !songUrl) return;
+
+    // Extract metadata from title patterns like "Song Name Song Lyrics"
+    const cleanTitle = songTitle
+      .replace(/\s+Song\s+Lyrics$/i, '')
+      .replace(/\s+Lyrics$/i, '')
+      .trim();
+
+    results.push({
+      id: songUrl, // Use URL as unique identifier
+      song_title: cleanTitle,
+      movie_name: '',  // Populated on detail fetch
+      singer: '',
+      lyricist: '',
+      music_director: '',
+      year: 0,
+      lyrics_preview: '',
+      url: songUrl,
+      thumbnail,
+    });
+  });
+
+  // Enrich first 5 results with metadata from meta descriptions
+  const enriched = await Promise.allSettled(
+    results.slice(0, 5).map(async (result) => {
+      try {
+        const meta = await fetchSongMeta(result.url);
+        return { ...result, ...meta };
+      } catch {
+        return result;
+      }
+    })
+  );
+
+  const enrichedResults = enriched.map((r) =>
+    r.status === 'fulfilled' ? r.value : results[0]
+  );
+
+  // Merge enriched results with remaining un-enriched ones
+  return [...enrichedResults, ...results.slice(5)];
+}
+
+async function fetchSongMeta(url: string): Promise<Partial<SearchResult>> {
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent': 'AiSwara-Studio/1.0 (Music Prompt Composer)',
+      'Accept': 'text/html',
+    },
+    next: { revalidate: 3600 }, // Cache for 1 hour
+  });
+
+  if (!response.ok) return {};
+
+  const html = await response.text();
+  const $ = cheerio.load(html);
+
+  // Extract from meta description
+  const metaDesc = $('meta[name="description"]').attr('content') || '';
+
+  const movieMatch = metaDesc.match(/Movie\s*(?:Name)?\s*:\s*([^,]+?)(?:\s*,\s*(?:Artists?|Music|Lyrics|Singer)|\s*$)/i);
+  const artistMatch = metaDesc.match(/Artists?\s*:\s*(.+?)(?:\s*,\s*(?:Music|Lyrics)|\s*$)/i);
+  const musicMatch = metaDesc.match(/Music\s*(?:Director)?\s*:\s*(.+?)(?:\s*,\s*(?:Lyrics|Artists?)|\s*$)/i);
+  const lyricistMatch = metaDesc.match(/Lyrics?\s*(?:by)?\s*:\s*(.+?)(?:\s*,\s*(?:Music|Artists?)|\s*$)/i);
+
+  // Extract lyrics preview from page content
+  const lyricsContent = $('div.entry-content, div.post-content, article .entry-content')
+    .first()
+    .text()
+    .trim();
+
+  const lyricsPreview = lyricsContent
+    .split('\n')
+    .filter((line) => line.trim().length > 0)
+    .slice(0, 4)
+    .join(' ')
+    .substring(0, 200);
+
+  return {
+    movie_name: movieMatch?.[1]?.trim() || '',
+    singer: artistMatch?.[1]?.trim() || '',
+    music_director: musicMatch?.[1]?.trim() || '',
+    lyricist: lyricistMatch?.[1]?.trim() || '',
+    lyrics_preview: lyricsPreview,
+  };
+}
+
+interface SearchResult {
+  id: string;
+  song_title: string;
+  movie_name: string;
+  singer: string;
+  lyricist: string;
+  music_director: string;
+  year: number;
+  lyrics_preview: string;
+  url: string;
+  thumbnail?: string;
 }

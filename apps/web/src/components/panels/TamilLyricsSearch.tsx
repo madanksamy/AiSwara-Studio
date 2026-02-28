@@ -26,8 +26,6 @@ export function TamilLyricsSearch({ onSelect }: TamilLyricsSearchProps) {
   const [results, setResults] = useState<LyricResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedLyric, setSelectedLyric] = useState<LyricResult | null>(null);
-  const [searchMode, setSearchMode] = useState<'text' | 'semantic'>('text');
-
   // Debounced search function
   const performSearch = useCallback(
     debounce(async (searchQuery: string) => {
@@ -43,7 +41,6 @@ export function TamilLyricsSearch({ onSelect }: TamilLyricsSearchProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             query: searchQuery,
-            mode: searchMode,
             limit: 20,
           }),
         });
@@ -58,8 +55,8 @@ export function TamilLyricsSearch({ onSelect }: TamilLyricsSearchProps) {
       } finally {
         setIsSearching(false);
       }
-    }, 300),
-    [searchMode]
+    }, 500),
+    []
   );
 
   useEffect(() => {
@@ -78,10 +75,19 @@ export function TamilLyricsSearch({ onSelect }: TamilLyricsSearchProps) {
     }
 
     try {
-      const response = await fetch(`/api/lyrics/${lyric.id}`);
+      // Use URL-encoded song URL as the ID parameter
+      const encodedUrl = encodeURIComponent(lyric.url);
+      const response = await fetch(`/api/lyrics/${encodedUrl}`);
       if (response.ok) {
         const data = await response.json();
-        const updatedLyric = { ...lyric, full_lyrics: data.lyrics };
+        const updatedLyric = {
+          ...lyric,
+          full_lyrics: data.lyrics,
+          movie_name: data.movie_name || lyric.movie_name,
+          singer: data.singer || lyric.singer,
+          lyricist: data.lyricist || lyric.lyricist,
+          music_director: data.music_director || lyric.music_director,
+        };
         setSelectedLyric(updatedLyric);
         setResults((prev) =>
           prev.map((r) => (r.id === lyric.id ? updatedLyric : r))
@@ -101,35 +107,11 @@ export function TamilLyricsSearch({ onSelect }: TamilLyricsSearchProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           Tamil Lyrics Search
-          <span className="text-xs text-zinc-500 ml-auto">tamillyrics.com</span>
+          <span className="text-xs text-zinc-500 ml-auto">tamil2lyrics.com</span>
         </h3>
       </div>
 
       <div className="p-4 space-y-3">
-        {/* Search Mode Toggle */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setSearchMode('text')}
-            className={`flex-1 px-3 py-1.5 text-xs rounded-lg transition-colors ${
-              searchMode === 'text'
-                ? 'bg-orange-600 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-            }`}
-          >
-            Text Match
-          </button>
-          <button
-            onClick={() => setSearchMode('semantic')}
-            className={`flex-1 px-3 py-1.5 text-xs rounded-lg transition-colors ${
-              searchMode === 'semantic'
-                ? 'bg-orange-600 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-            }`}
-          >
-            Semantic Search
-          </button>
-        </div>
-
         {/* Search Input */}
         <div className="relative">
           <input
