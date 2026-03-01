@@ -12,6 +12,7 @@ export { AnthropicClient, createAnthropicClient } from './anthropic';
 export { GoogleAIClient, createGoogleAIClient } from './google';
 export { MistralClient, createMistralClient } from './mistral';
 export { OllamaClient, createOllamaClient } from './ollama';
+export { PerplexityClient, createPerplexityClient } from './perplexity';
 
 // Factory function
 import type { LLMClient, LLMClientConfig, LLMProvider } from './types';
@@ -21,6 +22,7 @@ import { createAnthropicClient } from './anthropic';
 import { createGoogleAIClient } from './google';
 import { createMistralClient } from './mistral';
 import { createOllamaClient } from './ollama';
+import { createPerplexityClient } from './perplexity';
 
 /**
  * Create an LLM client for the specified provider
@@ -37,6 +39,8 @@ export function createLLMClient(provider: LLMProvider, config?: LLMClientConfig)
       return createMistralClient(config);
     case 'ollama':
       return createOllamaClient(config);
+    case 'perplexity':
+      return createPerplexityClient(config);
     default:
       throw new Error(`Unknown LLM provider: ${provider}`);
   }
@@ -52,6 +56,7 @@ export function createAllClients(configs?: Partial<Record<LLMProvider, LLMClient
     google: createGoogleAIClient(configs?.google),
     mistral: createMistralClient(configs?.mistral),
     ollama: createOllamaClient(configs?.ollama),
+    perplexity: createPerplexityClient(configs?.perplexity),
   };
 }
 
@@ -80,4 +85,7 @@ export const AgentClients = {
 
   /** Testing/Diagnostics Agent - Devstral 2 */
   testing: () => createMistralClient({ model: MODEL_IDS.devstral }),
+
+  /** Lyric Writer Agent - Perplexity Sonar Pro */
+  lyricWriter: () => createPerplexityClient({ model: MODEL_IDS.perplexity }),
 };

@@ -8,3 +8,4 @@ export { PresetPanel } from './PresetPanel';
 export { EmbeddedBrowser } from './EmbeddedBrowser';
 export { LyricInput } from './LyricInput';
 export { TamilLyricsSearch } from './TamilLyricsSearch';
+export { LyricWriter } from './LyricWriter';

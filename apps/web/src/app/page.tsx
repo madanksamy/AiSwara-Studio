@@ -17,10 +17,11 @@ import {
   EmbeddedBrowser,
   LyricInput,
   TamilLyricsSearch,
+  LyricWriter,
 } from '@/components/panels';
 
 type TabId = 'global' | 'instruments' | 'percussion' | 'vocals' | 'ornamentation' | 'structure' | 'mix';
-type RightPanelTab = 'output' | 'browser' | 'lyrics';
+type RightPanelTab = 'output' | 'browser' | 'lyrics' | 'write';
 
 const TABS: { id: TabId; label: string; icon: string }[] = [
   { id: 'global', label: 'Global', icon: '🌍' },
@@ -34,8 +35,9 @@ const TABS: { id: TabId; label: string; icon: string }[] = [
 
 const RIGHT_TABS: { id: RightPanelTab; label: string; icon: string }[] = [
   { id: 'output', label: 'Output', icon: '📤' },
-  { id: 'browser', label: 'Browser', icon: '🌐' },
+  { id: 'write', label: 'Write', icon: '✍️' },
   { id: 'lyrics', label: 'Lyrics', icon: '📝' },
+  { id: 'browser', label: 'Browser', icon: '🌐' },
 ];
 
 export default function StudioPage() {
@@ -73,6 +75,8 @@ export default function StudioPage() {
             <PresetPanel />
           </>
         );
+      case 'write':
+        return <LyricWriter />;
       case 'browser':
         return <EmbeddedBrowser />;
       case 'lyrics':

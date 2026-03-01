@@ -4,6 +4,7 @@ import type {
   CanonicalSchema,
   GlobalConfig,
   Instrumentation,
+  InstrumentRole,
   VocalConfig,
   Ornamentation,
   Structure,
@@ -39,6 +40,12 @@ interface ConfigState {
   // Actions - Reset & Presets
   resetToDefaults: () => void;
   loadPreset: (preset: Partial<CanonicalSchema>) => void;
+
+  // Actions - Lyric Writer Integration
+  applyLyricSuggestions: (suggestions: {
+    instruments: string[];
+    stylePrompt: string;
+  }) => void;
 }
 
 export const useConfigStore = create<ConfigState>()(
@@ -175,6 +182,32 @@ export const useConfigStore = create<ConfigState>()(
             macroControls: { ...DEFAULT_CONFIG.macroControls, ...preset.macroControls },
           },
         })),
+
+      // Apply lyric writer suggestions to instrumentation and prompt
+      applyLyricSuggestions: (suggestions) =>
+        set((state) => {
+          const instruments: InstrumentConfig[] = suggestions.instruments.map(
+            (id, index) => ({
+              id,
+              name: id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+              role: (index === 0 ? 'lead' : 'supporting') as InstrumentRole,
+              level: 0.7,
+              style: '',
+              adjectives: [],
+            })
+          );
+
+          return {
+            config: {
+              ...state.config,
+              instrumentation: {
+                ...state.config.instrumentation,
+                instruments,
+              },
+            },
+            generatedPrompt: suggestions.stylePrompt,
+          };
+        }),
     }),
     {
       name: 'aiswara-config',

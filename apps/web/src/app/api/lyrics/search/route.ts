@@ -1,103 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as cheerio from 'cheerio';
+import { createClient } from '@supabase/supabase-js';
 
-const TAMIL2LYRICS_BASE = 'https://www.tamil2lyrics.com';
+// tamizhlyrics.com Supabase instance
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mbtqrzpnombaqpwuspmm.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function POST(request: NextRequest) {
   try {
-    const { query, limit = 20 } = await request.json();
+    const { query, mode = 'text', limit = 20 } = await request.json();
 
     if (!query || query.length < 2) {
       return NextResponse.json({ results: [] });
     }
 
-    const results = await searchTamil2Lyrics(query, limit);
-    return NextResponse.json({ results });
+    let results;
+
+    if (mode === 'semantic') {
+      // Fuzzy search using pg_trgm similarity via Supabase RPC
+      const { data, error } = await supabase.rpc('search_lyrics_fuzzy', {
+        search_query: query,
+        match_limit: limit,
+      });
+
+      if (error) {
+        console.error('Fuzzy search error:', error);
+        // Fallback to text search
+        results = await performTextSearch(query, limit);
+      } else {
+        results = data;
+      }
+    } else {
+      // Try fuzzy first (better results), fall back to ILIKE text search
+      const { data, error } = await supabase.rpc('search_lyrics_fuzzy', {
+        search_query: query,
+        match_limit: limit,
+      });
+
+      if (error || !data || data.length === 0) {
+        results = await performTextSearch(query, limit);
+      } else {
+        results = data;
+      }
+    }
+
+    return NextResponse.json({ results: results || [] });
   } catch (error) {
     console.error('Search error:', error);
     return NextResponse.json({ error: 'Search failed' }, { status: 500 });
   }
 }
 
-async function searchTamil2Lyrics(query: string, limit: number) {
-  const searchUrl = `${TAMIL2LYRICS_BASE}/?s=${encodeURIComponent(query)}&post_type=lyrics`;
+async function performTextSearch(query: string, limit: number) {
+  const searchPattern = `%${query}%`;
 
-  const response = await fetch(searchUrl, {
-    headers: {
-      'User-Agent': 'AiSwara-Studio/1.0 (Music Prompt Composer)',
-      'Accept': 'text/html',
-    },
-    next: { revalidate: 300 }, // Cache for 5 minutes
-  });
+  const { data, error } = await supabase
+    .from('tamil_lyrics')
+    .select('id, song_title, movie_name, singer, lyricist, music_director, year, lyrics_preview, url')
+    .or(
+      `song_title.ilike.${searchPattern},movie_name.ilike.${searchPattern},singer.ilike.${searchPattern},lyricist.ilike.${searchPattern},music_director.ilike.${searchPattern}`
+    )
+    .order('year', { ascending: false, nullsFirst: false })
+    .limit(limit);
 
-  if (!response.ok) {
-    console.error(`tamil2lyrics.com returned ${response.status}`);
+  if (error) {
+    console.error('Text search error:', error);
     return [];
   }
 
-  const html = await response.text();
-  const $ = cheerio.load(html);
-  const results: SearchResult[] = [];
-
-  // Tamil2lyrics.com uses Bootstrap grid rows with class "list-line"
-  // Structure: .list-line > .col-lg-6 (song link) + .col-lg-3 (movie) + .col-lg-3 (lyricist)
-  $('.list-line').each((index, element) => {
-    if (index >= limit) return false;
-
-    const $row = $(element);
-    const columns = $row.find('[class*="col-"]');
-
-    if (columns.length < 2) return;
-
-    // First column: song title + link
-    const $songCol = $(columns[0]);
-    const $songLink = $songCol.find('a[href*="/lyrics/"]');
-    const songTitle = $songLink.text().trim();
-    const songUrl = $songLink.attr('href') || '';
-
-    if (!songTitle || !songUrl) return;
-
-    // Second column: movie/album link
-    const $movieCol = $(columns[1]);
-    const $movieLink = $movieCol.find('a[href*="/movies/"], a[href*="/album/"]');
-    const movieName = $movieLink.text().trim();
-
-    // Third column: lyricist link (if present)
-    const $lyricistCol = columns.length >= 3 ? $(columns[2]) : null;
-    const lyricistName = $lyricistCol
-      ? $lyricistCol.find('a[href*="/Lyricist/"], a[href*="/lyricist/"]').text().trim()
-      : '';
-
-    // Clean song title: remove "Song Lyrics" suffix
-    const cleanTitle = songTitle
-      .replace(/\s+Song\s+Lyrics$/i, '')
-      .replace(/\s+Lyrics$/i, '')
-      .trim();
-
-    results.push({
-      id: songUrl,
-      song_title: cleanTitle,
-      movie_name: movieName,
-      singer: '',
-      lyricist: lyricistName,
-      music_director: '',
-      year: 0,
-      lyrics_preview: '',
-      url: songUrl,
-    });
-  });
-
-  return results;
-}
-
-interface SearchResult {
-  id: string;
-  song_title: string;
-  movie_name: string;
-  singer: string;
-  lyricist: string;
-  music_director: string;
-  year: number;
-  lyrics_preview: string;
-  url: string;
+  return data || [];
 }
