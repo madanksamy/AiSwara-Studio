@@ -90,8 +90,10 @@ function ThemeMultiSelect({
 function ProviderBadge({ provider, latencyMs, status }: { provider: string; latencyMs: number; status: string }) {
   const colorMap: Record<string, string> = {
     gemini: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
-    claude: 'text-orange-400 bg-orange-500/10 border-orange-500/30',
-    perplexity: 'text-green-400 bg-green-500/10 border-green-500/30',
+    sonnet: 'text-orange-400 bg-orange-500/10 border-orange-500/30',
+    opus: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+    glm: 'text-green-400 bg-green-500/10 border-green-500/30',
+    kimi: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
   };
   const colors = colorMap[provider] || 'text-zinc-400 bg-zinc-500/10 border-zinc-500/30';
 
@@ -468,14 +470,14 @@ export function LyricWriter() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Generating with 3 LLMs...
+                Generating with 5 LLMs...
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                Generate Lyrics (Gemini + Claude + Perplexity)
+                Generate Lyrics (5 LLMs)
               </span>
             )}
           </button>
@@ -485,7 +487,7 @@ export function LyricWriter() {
       {/* Loading State */}
       {isGenerating && (
         <div className="space-y-3">
-          {['Gemini', 'Claude', 'Perplexity'].map((name) => (
+          {['Gemini 3.1', 'Sonnet 4.6', 'Opus 4.6', 'GLM-5', 'Kimi K2.5'].map((name) => (
             <div key={name} className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800 animate-pulse">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-16 h-5 bg-zinc-800 rounded-full" />
@@ -565,7 +567,7 @@ export function LyricWriter() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
           </svg>
           <p className="text-sm">Configure your song and hit Generate</p>
-          <p className="text-xs mt-1">3 AI models will compose lyrics in parallel</p>
+          <p className="text-xs mt-1">5 AI models will compose lyrics in parallel</p>
         </div>
       )}
     </div>

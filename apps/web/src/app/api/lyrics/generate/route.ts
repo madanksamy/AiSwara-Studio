@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const GEMINI_MODEL = 'gemini-2.5-pro-preview-05-06';
-const CLAUDE_MODEL = 'claude-sonnet-4-20250514';
-const PERPLEXITY_MODEL = 'sonar-pro';
+// ============================================================================
+// MODEL CONFIGURATION — 5 LLMs
+// ============================================================================
+
+const GEMINI_MODEL = 'gemini-3.1-pro-preview';
+const SONNET_MODEL = 'claude-sonnet-4-6-20250217';
+const OPUS_MODEL = 'claude-opus-4-6-20250205';
+const GLM_MODEL = 'glm-5';
+const KIMI_MODEL = 'kimi-k2.5';
 
 const LENGTH_MAP: Record<string, string> = {
   short: '4-line song (single verse or hook)',
@@ -111,14 +117,12 @@ interface LLMResult {
 }
 
 function parseLLMResponse(raw: string): { lyrics: string; stylePrompt: string; instruments: string[]; title: string; notes: string } {
-  // Strip markdown code blocks if present
   let cleaned = raw.trim();
   if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);
   else if (cleaned.startsWith('```')) cleaned = cleaned.slice(3);
   if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3);
   cleaned = cleaned.trim();
 
-  // Try JSON parse
   const parsed = JSON.parse(cleaned);
   return {
     lyrics: parsed.lyrics || '',
@@ -128,6 +132,10 @@ function parseLLMResponse(raw: string): { lyrics: string; stylePrompt: string; i
     notes: parsed.notes || '',
   };
 }
+
+// ============================================================================
+// 1. GEMINI 3.1 PRO PREVIEW
+// ============================================================================
 
 async function callGemini(systemPrompt: string, userPrompt: string): Promise<LLMResult> {
   const start = Date.now();
@@ -161,20 +169,18 @@ async function callGemini(systemPrompt: string, userPrompt: string): Promise<LLM
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const parsed = parseLLMResponse(text);
 
-    return {
-      provider: 'gemini',
-      model: GEMINI_MODEL,
-      status: 'success',
-      latencyMs: Date.now() - start,
-      ...parsed,
-    };
+    return { provider: 'gemini', model: GEMINI_MODEL, status: 'success', latencyMs: Date.now() - start, ...parsed };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
     return { provider: 'gemini', model: GEMINI_MODEL, status: 'error', error: msg, latencyMs: Date.now() - start, lyrics: '', stylePrompt: '', instruments: [], title: '', notes: '' };
   }
 }
 
-async function callClaude(systemPrompt: string, userPrompt: string): Promise<LLMResult> {
+// ============================================================================
+// 2. CLAUDE SONNET 4.6
+// ============================================================================
+
+async function callClaude(systemPrompt: string, userPrompt: string, model: string, providerName: string): Promise<LLMResult> {
   const start = Date.now();
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -188,9 +194,9 @@ async function callClaude(systemPrompt: string, userPrompt: string): Promise<LLM
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: CLAUDE_MODEL,
+        model,
         max_tokens: 4096,
-        temperature: 0.8,
+        temperature: model.includes('opus') ? 0.85 : 0.8,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
       }),
@@ -198,40 +204,38 @@ async function callClaude(systemPrompt: string, userPrompt: string): Promise<LLM
 
     if (!response.ok) {
       const err = await response.text();
-      throw new Error(`Claude API ${response.status}: ${err.substring(0, 200)}`);
+      throw new Error(`${providerName} API ${response.status}: ${err.substring(0, 200)}`);
     }
 
     const data = await response.json();
     const text = data.content?.[0]?.text || '';
     const parsed = parseLLMResponse(text);
 
-    return {
-      provider: 'claude',
-      model: CLAUDE_MODEL,
-      status: 'success',
-      latencyMs: Date.now() - start,
-      ...parsed,
-    };
+    return { provider: providerName, model, status: 'success', latencyMs: Date.now() - start, ...parsed };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
-    return { provider: 'claude', model: CLAUDE_MODEL, status: 'error', error: msg, latencyMs: Date.now() - start, lyrics: '', stylePrompt: '', instruments: [], title: '', notes: '' };
+    return { provider: providerName, model, status: 'error', error: msg, latencyMs: Date.now() - start, lyrics: '', stylePrompt: '', instruments: [], title: '', notes: '' };
   }
 }
 
-async function callPerplexity(systemPrompt: string, userPrompt: string): Promise<LLMResult> {
+// ============================================================================
+// 3. GLM-5 (Zhipu / Z.ai — OpenAI-compatible)
+// ============================================================================
+
+async function callGLM(systemPrompt: string, userPrompt: string): Promise<LLMResult> {
   const start = Date.now();
   try {
-    const apiKey = process.env.PERPLEXITY_API_KEY;
-    if (!apiKey) throw new Error('PERPLEXITY_API_KEY not set');
+    const apiKey = process.env.ZHIPU_API_KEY || process.env.ZAI_API_KEY;
+    if (!apiKey) throw new Error('ZHIPU_API_KEY not set');
 
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: PERPLEXITY_MODEL,
+        model: GLM_MODEL,
         temperature: 0.85,
         max_tokens: 4096,
         messages: [
@@ -243,25 +247,66 @@ async function callPerplexity(systemPrompt: string, userPrompt: string): Promise
 
     if (!response.ok) {
       const err = await response.text();
-      throw new Error(`Perplexity API ${response.status}: ${err.substring(0, 200)}`);
+      throw new Error(`GLM API ${response.status}: ${err.substring(0, 200)}`);
     }
 
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content || '';
     const parsed = parseLLMResponse(text);
 
-    return {
-      provider: 'perplexity',
-      model: PERPLEXITY_MODEL,
-      status: 'success',
-      latencyMs: Date.now() - start,
-      ...parsed,
-    };
+    return { provider: 'glm', model: GLM_MODEL, status: 'success', latencyMs: Date.now() - start, ...parsed };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
-    return { provider: 'perplexity', model: PERPLEXITY_MODEL, status: 'error', error: msg, latencyMs: Date.now() - start, lyrics: '', stylePrompt: '', instruments: [], title: '', notes: '' };
+    return { provider: 'glm', model: GLM_MODEL, status: 'error', error: msg, latencyMs: Date.now() - start, lyrics: '', stylePrompt: '', instruments: [], title: '', notes: '' };
   }
 }
+
+// ============================================================================
+// 4. KIMI K2.5 (Moonshot — OpenAI-compatible)
+// ============================================================================
+
+async function callKimi(systemPrompt: string, userPrompt: string): Promise<LLMResult> {
+  const start = Date.now();
+  try {
+    const apiKey = process.env.MOONSHOT_API_KEY || process.env.KIMI_API_KEY;
+    if (!apiKey) throw new Error('MOONSHOT_API_KEY not set');
+
+    const response = await fetch('https://api.moonshot.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: KIMI_MODEL,
+        temperature: 0.85,
+        max_tokens: 4096,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Kimi API ${response.status}: ${err.substring(0, 200)}`);
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content || '';
+    const parsed = parseLLMResponse(text);
+
+    return { provider: 'kimi', model: KIMI_MODEL, status: 'success', latencyMs: Date.now() - start, ...parsed };
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    return { provider: 'kimi', model: KIMI_MODEL, status: 'error', error: msg, latencyMs: Date.now() - start, lyrics: '', stylePrompt: '', instruments: [], title: '', notes: '' };
+  }
+}
+
+// ============================================================================
+// API ROUTE
+// ============================================================================
 
 export async function POST(request: NextRequest) {
   try {
@@ -273,11 +318,13 @@ export async function POST(request: NextRequest) {
 
     const userPrompt = buildUserPrompt(config);
 
-    // Call all 3 LLMs in parallel
+    // Call all 5 LLMs in parallel
     const results = await Promise.all([
       callGemini(SYSTEM_PROMPT, userPrompt),
-      callClaude(SYSTEM_PROMPT, userPrompt),
-      callPerplexity(SYSTEM_PROMPT, userPrompt),
+      callClaude(SYSTEM_PROMPT, userPrompt, SONNET_MODEL, 'sonnet'),
+      callClaude(SYSTEM_PROMPT, userPrompt, OPUS_MODEL, 'opus'),
+      callGLM(SYSTEM_PROMPT, userPrompt),
+      callKimi(SYSTEM_PROMPT, userPrompt),
     ]);
 
     return NextResponse.json({ results });

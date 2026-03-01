@@ -3,7 +3,7 @@
 // seed-lyrics.mjs — Scrape tamil2lyrics.com and seed Supabase tamil_lyrics table
 
 const SUPABASE_URL = 'https://mbtqrzpnombaqpwuspmm.supabase.co';
-const SUPABASE_KEY = '***REDACTED***';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const BASE_URL = 'https://www.tamil2lyrics.com';
 
 const SEARCH_TERMS = [
@@ -11,18 +11,20 @@ const SEARCH_TERMS = [
   'ilaiyaraaja', 'ar rahman', 'harris jayaraj', 'anirudh', 'yuvan', 'dhanush',
   'rajini', 'vijay', 'ajith', 'nee', 'en', 'kadhal', 'kannamma', 'raaja',
   'ponnu', 'megam', 'azhagu', 'kuthu', 'pattu', 'idhayam', 'vennilave',
-  'munbe vaa', 'oru', 'un', 'thamizh', 'verithanam', 'suriya', 'kamal',
-  'sid sriram', 'shreya ghoshal', 'spb', 'chitra', 'janaki', 'yesudas',
+  'munbe', 'oru', 'un', 'thamizh', 'verithanam', 'suriya', 'kamal',
+  'sid sriram', 'shreya', 'chitra', 'janaki',
   'shankar mahadevan', 'hariharan', 'unnikrishnan', 'karthik', 'thulluvadho',
-  'roja', 'bombay', 'thiruda', 'gentleman', 'vaali', 'vairamuthu',
-  'ilayaraja', 'rahman', 'imman', 'gv prakash', 'hip hop tamizha',
-  'santhosh narayanan', 'sean roldan'
+  'roja', 'bombay', 'gentleman', 'vaali', 'vairamuthu',
+  'ilayaraja', 'imman', 'gv prakash', 'hip hop tamizha',
+  'santhosh narayanan', 'sean roldan', 'naan', 'kadavul', 'ponnin',
+  'theri', 'mersal', 'master', 'beast', 'bigil', 'leo', 'jailer',
+  'viduthalai', 'maamannan', 'ponniyin', 'thunivu', 'vikram',
+  'aranmanai', 'maari', 'enthiran'
 ];
 
-const MAX_PAGES_PER_SEARCH = 3; // Up to 3 pages per search (30 results)
+const MAX_PAGES_PER_SEARCH = 3;
 const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
-// Track all seen URLs to avoid duplicates
 const seenUrls = new Set();
 let totalInserted = 0;
 let totalErrors = 0;
@@ -70,45 +72,37 @@ function stripTags(html) {
 function parseSearchResults(html) {
   const results = [];
   
-  // Match article blocks that are type-lyrics (not type-album)
-  const articleRegex = /<article[^>]*type-lyrics[^>]*>([\s\S]*?)<\/article>/g;
+  // Format: <div class="col-lg-6 col-sm-6 col-xs-6"><a href="URL">Title</a></div>
+  const linkRegex = /<div[^>]*class="col-lg-6[^"]*"[^>]*>\s*<a[^>]*href="([^"]+\/lyrics\/[^"]+)"[^>]*>([^<]+)<\/a>/g;
   let match;
   
-  while ((match = articleRegex.exec(html)) !== null) {
-    const block = match[1];
-    
-    // Extract the h3 > a link (song title + URL)
-    const h3LinkMatch = block.match(/<h3[^>]*>\s*<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/);
-    if (!h3LinkMatch) continue;
-    
-    const url = h3LinkMatch[1].trim();
-    const songTitle = decodeHtmlEntities(stripTags(h3LinkMatch[2])).trim();
-    
-    if (!url || !songTitle) continue;
-    // Skip non-lyrics URLs
-    if (!url.includes('/lyrics/')) continue;
-    
-    results.push({ song_title: songTitle, url });
+  while ((match = linkRegex.exec(html)) !== null) {
+    const url = match[1].trim();
+    const songTitle = decodeHtmlEntities(match[2]).trim();
+    if (url && songTitle) {
+      results.push({ song_title: songTitle, url });
+    }
   }
   
   return results;
 }
 
 function hasNextPage(html) {
-  return html.includes('OLDER POST') || html.includes('next page-numbers');
+  return html.includes('<link rel="next"') || html.includes('OLDER POST');
 }
 
 function parseSongPage(html, song) {
   // Extract lyrics from mainlyricscontent
   let lyrics = '';
-  const lyricsMatch = html.match(/<div class="mainlyricscontent">([\s\S]*?)(?:<div class="margint20 same-album"|<div[^>]*class="[^"]*same-album|<div[^>]*id="ad-|<footer)/);
+  const lyricsMatch = html.match(/class="mainlyricscontent">([\s\S]*?)(?:<div[^>]*class="[^"]*same-album|<div[^>]*id="ad-footer|<div[^>]*class="[^"]*sidebar|$)/);
   if (lyricsMatch) {
     let raw = lyricsMatch[1];
-    // Remove tablink buttons and script/ad blocks
+    // Remove buttons, scripts, ads, iframes
     raw = raw.replace(/<button[^>]*>[\s\S]*?<\/button>/g, '');
     raw = raw.replace(/<script[^>]*>[\s\S]*?<\/script>/g, '');
     raw = raw.replace(/<ins[^>]*>[\s\S]*?<\/ins>/g, '');
-    raw = raw.replace(/<div[^>]*class="[^"]*ad[^"]*"[^>]*>[\s\S]*?<\/div>/g, '');
+    raw = raw.replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/g, '');
+    raw = raw.replace(/<style[^>]*>[\s\S]*?<\/style>/g, '');
     // Replace br and p with newlines
     raw = raw.replace(/<br\s*\/?>/gi, '\n');
     raw = raw.replace(/<\/p>/gi, '\n');
@@ -116,8 +110,8 @@ function parseSongPage(html, song) {
     // Strip remaining tags
     raw = raw.replace(/<[^>]*>/g, '');
     lyrics = decodeHtmlEntities(raw)
+      .replace(/\(adsbygoogle[\s\S]*?\)\.push\(\{\}\);?/g, '')
       .replace(/\n{3,}/g, '\n\n')
-      .replace(/^\s+|\s+$/g, '')
       .trim();
   }
   
@@ -127,7 +121,6 @@ function parseSongPage(html, song) {
   const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/);
   if (titleMatch) {
     const titleText = decodeHtmlEntities(titleMatch[1]);
-    // Pattern: "Song Title - Movie (Tamil Film) - Year"
     const titleParts = titleText.match(/^.+?\s*[-–]\s*(.+?)\s+(?:Tamil\s+)?Film\s*[-–]\s*(\d{4})/i);
     if (titleParts) {
       movieName = titleParts[1].trim();
@@ -136,7 +129,7 @@ function parseSongPage(html, song) {
     }
   }
   
-  // Also try movie from the "in <a href='...movies/...'>" link in header
+  // Also try movie from the "in <a>" link in header
   if (!movieName) {
     const movieLinkMatch = html.match(/in <a[^>]*href="[^"]*\/movies\/[^"]*"[^>]*>([^<]+)<\/a>/);
     if (movieLinkMatch) {
@@ -144,64 +137,80 @@ function parseSongPage(html, song) {
     }
   }
   
-  // Extract singer from lyrics text: "Singer : Name" or "Singer(s) : Name"
+  // Extract metadata from lyrics text
   let singer = null;
-  const singerMatch = lyrics.match(/Singer\s*(?:\(s\))?\s*:\s*([^\n]+)/i) || 
-                       html.match(/Singer\s*(?:\(s\))?\s*:\s*<\/\w+>\s*([^<\n]+)/i) ||
-                       html.match(/sung by\s+([^.<\n]+)/i);
+  const singerMatch = lyrics.match(/Singer\s*(?:\(s\))?\s*:\s*([^\n]+)/i);
   if (singerMatch) {
-    singer = singerMatch[1].trim().replace(/^\s*<[^>]*>\s*/, '');
+    singer = singerMatch[1].trim();
     if (singer.length > 150) singer = singer.substring(0, 150);
   }
+  if (!singer) {
+    const altSinger = html.match(/sung by\s+([^.<\n]+)/i);
+    if (altSinger) singer = decodeHtmlEntities(stripTags(altSinger[1])).trim();
+  }
   
-  // Extract music director
   let musicDirector = null;
-  const mdMatch = lyrics.match(/Music\s+Director\s*:\s*([^\n]+)/i) ||
-                   html.match(/Music\s+Director\s*:\s*<\/\w+>\s*([^<\n]+)/i) ||
-                   html.match(/music was composed by\s+([^.<\n]+)/i);
+  const mdMatch = lyrics.match(/Music\s+Director\s*:\s*([^\n]+)/i);
   if (mdMatch) {
-    musicDirector = mdMatch[1].trim().replace(/^\s*<[^>]*>\s*/, '');
+    musicDirector = mdMatch[1].trim();
     if (musicDirector.length > 150) musicDirector = musicDirector.substring(0, 150);
   }
-  
-  // Extract lyricist
-  let lyricist = null;
-  const lyricistMatch = lyrics.match(/Lyricist\s*:\s*([^\n]+)/i) ||
-                         html.match(/Lyricist\s*:\s*<\/\w+>\s*([^<\n]+)/i) ||
-                         html.match(/penned by\s+([^.<\n]+)/i);
-  if (lyricistMatch) {
-    lyricist = lyricistMatch[1].trim().replace(/^\s*<[^>]*>\s*/, '');
-    if (lyricist.length > 150) lyricist = lyricist.substring(0, 150);
+  if (!musicDirector) {
+    const altMd = html.match(/music was composed by\s+([^.<\n]+)/i);
+    if (altMd) musicDirector = decodeHtmlEntities(stripTags(altMd[1])).trim();
   }
   
-  // Try year from meta description if not found in title
+  let lyricist = null;
+  const lyricistMatch = lyrics.match(/Lyricist\s*:\s*([^\n]+)/i);
+  if (lyricistMatch) {
+    lyricist = lyricistMatch[1].trim();
+    if (lyricist.length > 150) lyricist = lyricist.substring(0, 150);
+  }
+  if (!lyricist) {
+    const altLyr = html.match(/penned by\s+([^.<\n]+)/i);
+    if (altLyr) lyricist = decodeHtmlEntities(stripTags(altLyr[1])).trim();
+  }
+  // Also try lyricist from the header h3 link (shown above song title)
+  if (!lyricist) {
+    const headerLyricist = html.match(/<h3><a[^>]*href="[^"]*\/Lyricist\/[^"]*"[^>]*>([^<]+)<\/a>/);
+    if (headerLyricist) lyricist = decodeHtmlEntities(headerLyricist[1]).trim();
+  }
+  
+  // Try year from meta if not found
   if (!year) {
-    const metaMatch = html.match(/content="[^"]*(\d{4})[^"]*Tamil\s+Film/i) ||
-                      html.match(/Tamil\s+Film\s*[-–]\s*(\d{4})/i);
-    if (metaMatch) {
-      const y = parseInt(metaMatch[1]);
+    const yearMatch = html.match(/Tamil\s+Film\s*[-–]\s*(\d{4})/i);
+    if (yearMatch) {
+      const y = parseInt(yearMatch[1]);
       if (y >= 1950 && y <= 2026) year = y;
     }
   }
   
-  // Clean up lyrics: remove the metadata lines (Singer, Music Director, Lyricist, etc.) from lyrics text
-  // Keep only the actual song lyrics
+  // Clean lyrics: remove intro paragraph and metadata
   let cleanLyrics = lyrics;
-  // Remove the intro paragraph (usually starts with song title and contains "is the track from")
-  cleanLyrics = cleanLyrics.replace(/^[\s\S]*?(?:Lyrics works penned by[^\n]*\n|Lyricist\s*:[^\n]*\n)/i, '');
-  // If that didn't work, try removing lines with metadata
-  if (cleanLyrics === lyrics) {
-    cleanLyrics = cleanLyrics
-      .replace(/^.*is the track from[\s\S]*?(?=\n[A-Z][a-z]|\n\n)/i, '')
-      .replace(/Singer\s*(?:\(s\))?\s*:[^\n]*/gi, '')
-      .replace(/Music\s+Director\s*:[^\n]*/gi, '')
-      .replace(/Lyricist\s*:[^\n]*/gi, '')
-      .replace(/Starring[^\n]*/gi, '');
+  // Remove everything before the actual lyrics start
+  // The metadata section ends after "Lyricist : Name" line
+  const lyricistLineEnd = cleanLyrics.search(/Lyricist\s*:\s*[^\n]+\n/i);
+  if (lyricistLineEnd > -1) {
+    const afterLyricist = cleanLyrics.indexOf('\n', lyricistLineEnd + 10);
+    if (afterLyricist > -1) {
+      cleanLyrics = cleanLyrics.substring(afterLyricist).trim();
+    }
+  } else {
+    // Try removing intro paragraph
+    const introEnd = cleanLyrics.search(/(?:Music Director\s*:[^\n]*\n)/i);
+    if (introEnd > -1) {
+      const afterIntro = cleanLyrics.indexOf('\n', introEnd + 10);
+      if (afterIntro > -1) {
+        cleanLyrics = cleanLyrics.substring(afterIntro).trim();
+      }
+    }
   }
-  cleanLyrics = cleanLyrics.replace(/^\s*\n+/, '').trim();
   
-  // If cleaned lyrics is too short, fall back to original
-  if (cleanLyrics.length < 50 && lyrics.length > cleanLyrics.length) {
+  // Remove tab labels like "English" / "தமிழ்" at the start
+  cleanLyrics = cleanLyrics.replace(/^(?:English|தமிழ்|Tamil)\s*\n*/gi, '').trim();
+  
+  // If cleaned is too short, fall back
+  if (cleanLyrics.length < 30 && lyrics.length > cleanLyrics.length) {
     cleanLyrics = lyrics;
   }
   
@@ -253,7 +262,7 @@ async function processSearchTerm(term) {
       ? `${BASE_URL}/?s=${encodeURIComponent(term)}&post_type=lyrics`
       : `${BASE_URL}/page/${page}/?s=${encodeURIComponent(term)}&post_type=lyrics`;
     
-    console.log(`\n[SEARCH] "${term}" page ${page} -> ${searchUrl}`);
+    console.log(`\n[SEARCH] "${term}" page ${page}`);
     
     const html = await fetchPage(searchUrl);
     if (!html) break;
@@ -274,15 +283,17 @@ async function processSearchTerm(term) {
     for (const song of newResults) {
       await delay(500);
       
-      console.log(`  Fetching: ${song.song_title}`);
+      process.stdout.write(`  ${song.song_title}...`);
       const songHtml = await fetchPage(song.url);
-      if (!songHtml) continue;
+      if (!songHtml) {
+        console.log(' FAILED');
+        continue;
+      }
       
       const songData = parseSongPage(songHtml, song);
       
-      // Skip songs with no/minimal lyrics content
       if (!songData.full_lyrics || songData.full_lyrics.length < 30) {
-        console.log(`    -> Skipped (no/minimal lyrics: ${songData.full_lyrics?.length || 0} chars)`);
+        console.log(` skip (${songData.full_lyrics?.length || 0} chars)`);
         totalSkipped++;
         continue;
       }
@@ -291,13 +302,13 @@ async function processSearchTerm(term) {
       if (ok) {
         totalInserted++;
         totalForTerm++;
-        console.log(`    -> OK #${totalInserted} [${songData.movie_name || '?'}] [${songData.full_lyrics.length} chars]`);
+        console.log(` OK #${totalInserted} [${songData.movie_name || '?'}] [${songData.full_lyrics.length}c]`);
       } else {
         totalErrors++;
+        console.log(' DB_ERR');
       }
     }
     
-    // Check if there's a next page
     if (!hasNextPage(html)) break;
     await delay(500);
   }
@@ -309,10 +320,10 @@ async function main() {
   console.log('=== AiSwara Tamil Lyrics Seeder ===');
   console.log(`Target: ${SUPABASE_URL}`);
   console.log(`Search terms: ${SEARCH_TERMS.length}`);
-  console.log(`Max pages per search: ${MAX_PAGES_PER_SEARCH}`);
+  console.log(`Max pages/search: ${MAX_PAGES_PER_SEARCH}`);
   console.log(`Started: ${new Date().toISOString()}\n`);
   
-  // First verify Supabase connectivity
+  // Verify Supabase connectivity
   try {
     const testRes = await fetch(`${SUPABASE_URL}/rest/v1/tamil_lyrics?select=url&limit=1`, {
       headers: {
@@ -323,31 +334,29 @@ async function main() {
     });
     if (!testRes.ok) {
       const err = await testRes.text();
-      console.error(`[FATAL] Supabase connection failed: ${testRes.status} ${err}`);
+      console.error(`[FATAL] Supabase: ${testRes.status} ${err}`);
       process.exit(1);
     }
-    const existing = await testRes.json();
-    console.log(`[OK] Supabase connected (${existing.length} existing rows in sample)\n`);
+    console.log('[OK] Supabase connected\n');
   } catch (err) {
     console.error(`[FATAL] Cannot reach Supabase: ${err.message}`);
     process.exit(1);
   }
   
-  for (const term of SEARCH_TERMS) {
-    await processSearchTerm(term);
+  for (let i = 0; i < SEARCH_TERMS.length; i++) {
+    await processSearchTerm(SEARCH_TERMS[i]);
     await delay(700);
     
-    // Progress checkpoint every 10 terms
-    if (SEARCH_TERMS.indexOf(term) % 10 === 9) {
-      console.log(`\n>>> CHECKPOINT: ${totalInserted} inserted, ${totalErrors} errors, ${totalSkipped} skipped, ${seenUrls.size} URLs seen <<<\n`);
+    if ((i + 1) % 10 === 0) {
+      console.log(`\n>>> PROGRESS: ${i + 1}/${SEARCH_TERMS.length} terms | ${totalInserted} inserted | ${totalErrors} err | ${totalSkipped} skip | ${seenUrls.size} URLs <<<\n`);
     }
   }
   
   console.log(`\n=== DONE ===`);
   console.log(`Total inserted/updated: ${totalInserted}`);
   console.log(`Total errors: ${totalErrors}`);
-  console.log(`Total skipped (no lyrics): ${totalSkipped}`);
-  console.log(`Unique URLs processed: ${seenUrls.size}`);
+  console.log(`Total skipped: ${totalSkipped}`);
+  console.log(`Unique URLs: ${seenUrls.size}`);
   console.log(`Finished: ${new Date().toISOString()}`);
 }
 
