@@ -5,38 +5,52 @@
 
 import type { Agent, AgentContext, AgentResult, StyleLayer } from './types';
 import { AgentClients } from '@aiswara/llm-clients';
+import { getPlatformConfig, formatForPlatform, validateForPlatform } from '../adapters';
+import type { StyleInput, PlatformType } from '../adapters/types';
 
-const PLATFORM_LIMITS = {
-  suno: { min: 120, max: 580 },
-  heartmula: { min: 120, max: 600 },
-  generic: { min: 100, max: 600 },
-};
+/**
+ * Convert agent StyleLayer[] to adapter StyleInput
+ */
+function styleLayersToStyleInput(layers: StyleLayer[]): StyleInput {
+  const input: StyleInput = {};
 
-const PLATFORM_STYLES = {
-  suno: {
-    separator: ', ',
-    useKeywords: false,
-    includeProduction: true,
-  },
-  heartmula: {
-    separator: ', ',
-    useKeywords: true,
-    includeProduction: true,
-  },
-  generic: {
-    separator: ', ',
-    useKeywords: false,
-    includeProduction: true,
-  },
-};
+  for (const layer of layers) {
+    switch (layer.category) {
+      case 'genre':
+        input.genre = layer.description;
+        break;
+      case 'mood':
+        input.mood = layer.description;
+        break;
+      case 'instrumentation':
+        input.instruments = layer.keywords;
+        break;
+      case 'vocals':
+        input.vocals = { style: layer.description };
+        break;
+      case 'ornamentation':
+        input.ornamentation = layer.keywords;
+        break;
+      case 'structure':
+        input.structure = layer.description;
+        break;
+      case 'mix':
+        input.production = layer.keywords;
+        break;
+    }
+  }
 
-function buildSystemPrompt(platform: string, limits: { min: number; max: number }): string {
+  return input;
+}
+
+function buildSystemPrompt(platform: PlatformType): string {
+  const config = getPlatformConfig(platform);
   return `You are a Platform Adapter for AiSwara Music Studio.
 Given an array of style layers (each with category, description, priority, keywords),
 compose a single cohesive music style prompt optimized for the "${platform}" AI music platform.
 
 Platform constraints:
-- Target character range: ${limits.min}-${limits.max} characters
+- Target character range: ${config.minChars}-${config.maxChars} characters
 - ${platform === 'heartmula' ? 'Use structured keyword-heavy tags' : 'Use natural, flowing language descriptions'}
 - Capitalize first letter, end with a period
 - Be specific with musical terminology, especially Indian/Tamil music terms
@@ -54,7 +68,6 @@ export const platformAdapter: Agent = {
     try {
       const styleLayers = context.styleLayers || [];
       const platform = context.targetPlatform;
-      const limits = PLATFORM_LIMITS[platform];
 
       let platformOutput: string;
       let tokensUsed = 0;
@@ -65,7 +78,7 @@ export const platformAdapter: Agent = {
         const client = AgentClients.platformAdapter();
         const response = await client.complete({
           messages: [
-            { role: 'system', content: buildSystemPrompt(platform, limits) },
+            { role: 'system', content: buildSystemPrompt(platform) },
             { role: 'user', content: JSON.stringify(styleLayers, null, 2) },
           ],
           temperature: 0.6,
@@ -80,9 +93,22 @@ export const platformAdapter: Agent = {
         tokensUsed = response.usage.totalTokens;
         llmUsed = response.model;
         decisions.push('LLM-adapted prompt via Gemini');
+
+        // Post-LLM validation against platform constraints
+        const validation = validateForPlatform(platformOutput, platform);
+        if (!validation.valid) {
+          console.warn(`[PlatformAdapter] Validation warnings: ${validation.errors.join('; ')}`);
+          decisions.push(`Validation warnings: ${validation.errors.join('; ')}`);
+        }
       } catch {
-        platformOutput = adaptForPlatform(styleLayers, platform);
-        decisions.push('Used rule-based fallback (LLM unavailable)');
+        // Rule-based fallback using adapter module
+        const styleInput = styleLayersToStyleInput(styleLayers);
+        const adapterResult = formatForPlatform(styleInput, platform);
+        platformOutput = adapterResult.prompt;
+        decisions.push('Used adapter-module fallback (LLM unavailable)');
+        if (adapterResult.warnings.length > 0) {
+          decisions.push(`Adapter warnings: ${adapterResult.warnings.join('; ')}`);
+        }
       }
 
       decisions.push(
@@ -118,30 +144,5 @@ export const platformAdapter: Agent = {
     }
   },
 };
-
-/**
- * Adapt style layers to platform-specific format (rule-based fallback)
- */
-function adaptForPlatform(layers: StyleLayer[], platform: keyof typeof PLATFORM_STYLES): string {
-  const style = PLATFORM_STYLES[platform];
-  const sortedLayers = [...layers].sort((a, b) => b.priority - a.priority);
-  const parts: string[] = [];
-
-  for (const layer of sortedLayers) {
-    if (style.useKeywords && layer.keywords.length > 0) {
-      parts.push(...layer.keywords.slice(0, 3));
-    } else {
-      parts.push(layer.description);
-    }
-  }
-
-  let prompt = parts.filter(Boolean).join(style.separator);
-  prompt = prompt.charAt(0).toUpperCase() + prompt.slice(1);
-  if (!prompt.endsWith('.')) {
-    prompt += '.';
-  }
-
-  return prompt;
-}
 
 export default platformAdapter;

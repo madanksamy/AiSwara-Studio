@@ -9,12 +9,7 @@ import { styleComposer } from './styleComposer';
 import { platformAdapter } from './platformAdapter';
 import { lengthController } from './lengthController';
 import { qualityConstraints } from './qualityConstraints';
-
-const PLATFORM_LIMITS = {
-  suno: { min: 120, max: 580 },
-  heartmula: { min: 120, max: 600 },
-  generic: { min: 100, max: 600 },
-} as const;
+import { getPlatformConfig } from '../adapters';
 
 export interface PipelineOptions {
   /** Input configuration from UI */
@@ -33,7 +28,8 @@ export interface PipelineOptions {
 export async function runPipeline(options: PipelineOptions): Promise<PipelineResult> {
   const { config, platform, debug = false } = options;
 
-  const targetLength = options.targetLength || PLATFORM_LIMITS[platform];
+  const platformConfig = getPlatformConfig(platform);
+  const targetLength = options.targetLength || { min: platformConfig.minChars, max: platformConfig.maxChars };
 
   // Initialize context
   let context: AgentContext = {
