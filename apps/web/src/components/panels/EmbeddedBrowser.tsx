@@ -16,7 +16,7 @@ const TARGETS = {
   },
   heartmula: {
     name: 'HeartMuLa',
-    url: 'https://heartmula.ai/create',
+    url: 'https://heartmula.co/generator',
     description: 'Expressive AI music creation',
     icon: '💜',
     color: 'from-pink-600 to-red-600',
